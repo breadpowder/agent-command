@@ -4,6 +4,48 @@
 
 The AgentDK SDLC (Software Development Lifecycle) commands provide a comprehensive development workflow system optimized for both feature development and bug fixing. Commands are organized by workflow type with clear separation of concerns.
 
+## 🔄 Quick Setup - Sync Commands to Your Environment
+
+To use these commands with AI agents (Claude, Codex, etc.), sync them to your local agent directories:
+
+### **Option 1: Sync from GitHub (Recommended)**
+```bash
+# Clone latest version from GitHub and sync to agent directories
+./sync_agent_commands.sh --github
+```
+
+### **Option 2: Sync from Local Directory**
+```bash
+# Sync from current local repository
+./sync_agent_commands.sh
+
+# Or sync from a custom directory
+./sync_agent_commands.sh /path/to/custom/commands
+```
+
+### **What it does:**
+- 📁 **Claude**: Copies commands to `~/.claude/commands/`
+- 📁 **Codex**: Copies commands to `~/.codex/prompts/`
+- 🔍 **Auto-detects**: Finds and syncs all `.md` command files
+- 🧹 **Clean sync**: Uses `rsync` for efficient copying (falls back to `cp`)
+
+### **Usage Examples:**
+```bash
+# Get help
+./sync_agent_commands.sh --help
+
+# Quick sync from GitHub (always gets latest version)
+./sync_agent_commands.sh --github
+
+# Sync from local development version
+./sync_agent_commands.sh
+
+# Sync from custom location
+./sync_agent_commands.sh ~/my-custom-commands
+```
+
+**💡 Pro tip**: Use `--github` flag to always get the latest command updates without manually pulling the repository.
+
 ## 🎯 Refactored Command Structure
 
 ### **Feature Development Commands:**

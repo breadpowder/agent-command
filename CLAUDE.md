@@ -10,7 +10,10 @@ This is the AgentDK SDLC Commands repository - a universal, project-agnostic dev
 - **Preview markdown**: Use your editor's preview or `glow README.md` (optional)
 - **Lint markdown** (optional): `npx markdownlint-cli "**/*.md"` if available
 - **Quick command audit**: `rg -n 'sdlc_' commands/` to search command documentation
-- **Sync commands to agent environments**: `./sync_agent_commands.sh` - copies command specs to `~/.claude/commands` and `~/.codex/prompts`
+- **Sync commands to agent environments**: 
+  - `./sync_agent_commands.sh` - sync from local commands directory
+  - `./sync_agent_commands.sh --github` - clone from GitHub and sync latest commands
+  - Copies command specs to `~/.claude/commands` and `~/.codex/prompts`
 
 ## Repository Architecture
 
