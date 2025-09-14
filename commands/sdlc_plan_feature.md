@@ -62,15 +62,20 @@ Store planning in a standardized structure:
 ```
 <project_root>/<name>/
 ├── plan/
-│   ├── main-plan.md        # Strategy, scope, milestones
-│   ├── task-breakdown.md   # 2-hour tasks with acceptance criteria
-│   ├── decision-log.md     # Options, pros/cons, chosen decisions
-│   └── architecture.md     # High-level diagrams and contracts
+│   ├── implementation-plan.md  # Strategy, scope, milestones (separate from PRD)
+│   ├── task-breakdown.md       # 2-hour tasks with acceptance criteria
+│   ├── decision-log.md         # Options, pros/cons, chosen decisions
+│   └── architecture.md         # High-level diagrams and contracts
+├── specs/                      # Machine-readable specifications  
+│   ├── api-contract.yaml       # OpenAPI spec with examples and error shapes
+│   ├── config-schema.yaml      # Configuration schema with defaults and validation
+│   ├── observability.yaml     # Metrics, alerts, dashboards, SLOs
+│   └── rollout-config.yaml     # Feature flags, gating checks, backout steps
 ├── issue/
-│   ├── requirements.md     # Functional and non-functional requirements
-│   └── risks.md            # Risks, mitigations, open questions
+│   ├── requirements.md         # Functional and non-functional requirements
+│   └── risks.md                # Risks, mitigations, open questions
 └── context/
-    └── source-reference.md # Links, tickets, prior art
+    └── source-reference.md     # Links, tickets, prior art
 ```
 
 ## Collaboration checkpoints
@@ -78,7 +83,27 @@ Store planning in a standardized structure:
 - Present 2–3 option sets with pros/cons; request user selection.
 - Share task breakdown; request approval before freezing the plan.
 
+### 5. Definition of Ready & Quality Standards
+
+**Definition of Ready - Before Implementation:**
+- Requirements analysis complete with clear boundaries and constraints
+- Architecture options evaluated with 2-3 viable approaches documented
+- Technology choices justified with trade-offs and constraints analysis
+- Data model implications assessed for migrations and compatibility  
+- Task breakdown complete with ≤2h tasks and validation criteria
+- Dependencies mapped with explicit ordering and risk assessment
+- Machine-readable specs created (API contracts, config schemas)
+- Observability plan defined with metrics, alerts, and SLO targets
+- Rollout strategy planned with feature flags and backout procedures
+- Decision log updated with selected options and rationale
+
+**Traceability Requirements:**
+- Map Goals → Requirements → Tests → Tasks
+- Maintain lightweight matrix (CSV/Markdown) or tags for CI validation
+- Each task must reference specific requirements and acceptance criteria
+
 ## Outputs
-- Updated planning workspace as above.
-- Recorded decisions with rationale and impact.
-- Finalized task breakdown ready for implementation handoff.
+- Updated planning workspace as above with machine-readable specs
+- Recorded decisions with rationale and impact assessment
+- Finalized task breakdown ready for implementation handoff
+- Quality gates and CI automation guidance established

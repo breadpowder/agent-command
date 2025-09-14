@@ -68,6 +68,10 @@ This command creates commits at key checkpoints for traceability:
 │   ├── risk-assessment.md   # Risks and mitigations
 │   ├── rollback-plan.md     # Recovery procedures
 │   └── decision-log.md      # Options considered and decision
+├── specs/                   # Machine-readable fix specifications
+│   ├── test-cases.json      # Regression tests and validation scenarios
+│   ├── rollback-config.yaml # Automated rollback triggers and procedures
+│   └── monitoring.yaml      # Enhanced monitoring for fix validation
 ├── issue/
 │   ├── root-cause.md        # Summary from analysis
 │   └── validation-plan.md   # What testing must prove

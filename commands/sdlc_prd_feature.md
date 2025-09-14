@@ -55,15 +55,19 @@ This command creates commits at key checkpoints for traceability:
 
 ### 2. Context Storage (Feature-Focused Structure)
 Store all PRD analysis and documentation in standardized directory structure:
+Files are created ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
 ```
 <project_root>/<name>/
 ├── plan/
-│   ├── prd.md                  # Complete Product Requirements Document
+│   ├── feature-spec.md         # Single source of truth: PRD + Requirements merged
 │   ├── user-stories.md         # Detailed user stories and acceptance criteria
 │   └── business-case.md        # Business justification and success metrics
+├── specs/                      # Machine-readable specifications
+│   ├── api-contract.yaml       # OpenAPI spec with examples and error shapes (if it is applicable)
+│   ├── acceptance-tests.json   # Structured acceptance criteria
+│   ├── observability.yaml     # Metrics, alerts, dashboards, SLOs
+│   └── rollout-config.yaml     # Feature flags, gating checks, backout steps
 ├── issue/
-│   ├── stakeholder-analysis.md # Stakeholder mapping and requirements
-│   ├── user-research.md        # User research findings and personas
 │   └── requirements.md         # Complete requirements including constraints and risks
 └── context/
     └── source-reference.md     # Original source context and links
@@ -72,17 +76,21 @@ Store all PRD analysis and documentation in standardized directory structure:
 **IMPORTANT**: All PRD documentation must be created under `<project_root>/<name>/` structure where `<name>` is the feature workspace name provided via `--name` parameter.
 
 **Streamlined Structure**: 
-- Removed `market-analysis.md` to focus on internal requirements and stakeholder analysis
-- Consolidated constraints and risk analysis into unified `requirements.md` for comprehensive requirements documentation
+- Single source of truth: `feature-spec.md` merges PRD + Requirements
+- Machine-readable specs in `specs/` directory for unambiguous tooling
+- Standardized headers across all documents for predictable context location
 
-**Unified Requirements Document Structure:**
-The `issue/requirements.md` file should include:
-- **Functional Requirements**: Core features and capabilities
+**Feature Specification Document Structure:**
+The `plan/feature-spec.md` file should include:
+- **Problem Statement**: Unambiguous problem and goals
+- **In/Out of Scope**: Clear boundaries and constraints
+- **User Stories**: Primary scenarios with acceptance criteria
+- **Functional Requirements**: Core features and capabilities  
 - **Non-Functional Requirements**: Performance, security, scalability, usability
-- **Technical Constraints**: Hardware, software, architecture limitations
-- **Business Constraints**: Performance requirements, operational requirements
+- **API Contracts**: Drafted endpoints with examples
+- **Success Metrics**: Measurable targets and KPIs
 - **Risk Assessment**: Technical and business risks with mitigation strategies
-- **Acceptance Criteria**: Clear validation criteria for each requirement phase
+- **Open Questions**: Tracked with owners and due dates
 
 ### 3. User Story Development & Prioritization
 
@@ -148,6 +156,44 @@ The `issue/requirements.md` file should include:
 - **Resource Risks**: Team capacity and skill requirements
 - **Timeline Risks**: Dependencies and critical path analysis
 - **Adoption Risks**: User acceptance and change management
+
+### 5. Definition of Ready (DoR) & Definition of Done (DoD)
+
+**Definition of Ready - Before Implementation:**
+- Problem and goals are unambiguous
+- In/out of scope defined with clear boundaries
+- Primary user stories and scenarios identified
+- API/contracts drafted with examples and error shapes
+- Acceptance criteria finalized and testable
+- NFRs set with measurable targets and thresholds
+- Test strategy explicit with coverage goals and quality metrics
+- Observability plan defined with metrics, logs, traces, dashboards
+- Rollout strategy planned with feature flags and backout procedures
+- Backward compatibility assessed with API versioning policy
+- Risks and open questions logged with owners and due dates
+- Owner/DRI, timeline, and success metrics agreed
+
+**Definition of Done - After Deployment:**
+- All acceptance tests pass in CI with traceability to requirements
+- NFRs validated with performance, security, reliability benchmarks  
+- Observability live with dashboards, alerts, and SLO tracking
+- Rollout executed successfully with backout validated
+- Backward compatibility maintained with migration safety
+- Edge cases and failure modes addressed (timeouts, retries, idempotency)
+- Runbook updated and on-call/support briefed
+- Documentation complete (how-to, reference, troubleshooting)
+- ADRs merged with links updated in spec/plan
+- Post-launch success review scheduled
+
+### 6. Quality Gates for CI Automation
+
+**Automated Validation Requirements:**
+- Schema validation on PR for all machine-readable specs
+- API contract diff check with compatibility rules enforcement
+- Acceptance tests must pass and map to F-### IDs for traceability
+- Performance smoke tests with budget thresholds enforced
+- Security checks: dependency scan, secrets scan, container hardening
+- Observability existence check: required metrics/alerts present
 
 ## 🔹 TEST
 

@@ -1,4 +1,4 @@
-# SDLC Setup Testing $ARGUMENTS
+# SDLC Test $ARGUMENTS
 
 ## Purpose
 Specialized testing setup and execution that establishes frameworks, writes tests, and validates
@@ -6,17 +6,17 @@ quality gates for a change. This command does not implement features or deploy t
 
 ## Command Usage
 ```bash
-# GitHub testing setup
-sdlc_setup_testing --source github --name api-testing --type integration --id 456
+# GitHub testing execution
+sdlc_test --source github --name api-testing --type integration --id 456
 
-# Local testing setup
-sdlc_setup_testing --source local --name ui-testing --type e2e
+# Local testing execution  
+sdlc_test --source local --name ui-testing --type e2e
 
-# Bitbucket testing setup
-sdlc_setup_testing --source bitbucket --name unit-testing --type pytest --id 789
+# Bitbucket testing execution
+sdlc_test --source bitbucket --name unit-testing --type pytest --id 789
 
 # Simple usage (auto-detects everything)
-sdlc_setup_testing --name comprehensive-testing
+sdlc_test --name comprehensive-testing
 ```
 
 **Simplified Parameters:**
@@ -73,9 +73,16 @@ This command creates commits at key checkpoints for traceability:
 <project_root>/<name>/
 ├── plan/
 │   ├── decision-log.md     # Tooling and strategy decisions
-│   └── test-plan.md        # Scope, cases, coverage goals
+│   └── test-strategy.md    # Comprehensive test strategy with coverage goals
+├── specs/                  # Machine-readable test specifications
+│   ├── acceptance-tests.json   # Structured acceptance criteria and test cases
+│   └── test-config.yaml    # Test framework configuration and CI integration
 ├── tests/                  # Implemented tests and fixtures
-└── reports/                # Coverage and test reports (if generated)
+│   ├── unit/              # Unit tests with clear isolation
+│   ├── integration/       # Integration tests for API and data flows
+│   ├── e2e/              # End-to-end tests for critical user paths
+│   └── performance/       # Performance tests with budget enforcement
+└── reports/               # Coverage and test reports with quality metrics
 ```
 
 ## Collaboration checkpoints
@@ -83,7 +90,30 @@ This command creates commits at key checkpoints for traceability:
 - Present tooling options with trade-offs; request selection.
 - Review coverage and outcomes; agree on any follow-up work.
 
+### 4. Comprehensive Test Strategy Requirements
+
+**Test Coverage and Quality Metrics:**
+- Unit tests: 80%+ code coverage with clear isolation and mocking
+- Integration tests: All API endpoints and critical data flows covered
+- E2E tests: Primary user scenarios and acceptance criteria validated
+- Performance tests: Response times, throughput, scalability within budgets
+- Security tests: Authentication, authorization, input validation, data protection
+
+**Test Organization and Traceability:**
+- Map tests to acceptance criteria with F-### identifiers
+- Organize tests by scope (unit/integration/e2e/performance)
+- Maintain fixtures, mocks, and test data strategies
+- Ensure test determinism and isolation with proper cleanup
+
+**CI Integration and Quality Gates:**
+- Automated execution in CI pipeline with quality gates
+- Test results traceability to requirements and user stories
+- Coverage reporting with thresholds and trend analysis
+- Performance budgets enforced with threshold violations
+- Security test integration with vulnerability scanning
+
 ## Outputs
-- Test suites, fixtures, and utilities.
-- CI-integrated execution with quality gates.
-- Coverage and test reports for review.
+- Comprehensive test suites with multi-level coverage (unit/integration/e2e/performance)
+- CI-integrated execution with automated quality gates and reporting
+- Traceability matrix linking tests to requirements and acceptance criteria
+- Coverage and performance reports meeting quality thresholds

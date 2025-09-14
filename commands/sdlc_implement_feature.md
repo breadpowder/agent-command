@@ -61,7 +61,10 @@ This command creates commits at key checkpoints for traceability:
 2. Business logic: core functionality behind feature flags where appropriate.
 3. API/surface: endpoints, handlers, UI components, or CLIs as applicable.
 4. Integration: connect to dependencies and existing modules.
-5. Observability: add logging and metrics relevant to the new code paths.
+5. Observability: add logging, metrics, traces with SLO tracking.
+6. Backward compatibility: API versioning, schema evolution, migration safety.
+7. Edge cases and failure modes: timeouts, retries, idempotency, partial failures.
+8. Rollout preparation: feature flags, kill switches, configuration validation.
 
 ### Quality guidelines (in-implementation)
 - Error handling and input validation follow existing patterns.
@@ -78,7 +81,27 @@ This command creates commits at key checkpoints for traceability:
 - Present design option trade-offs and request user selection.
 - Walk through the PR diff with the user if requested.
 
+### 4. Quality Gates and Definition of Done
+
+**Implementation Quality Gates:**
+- All acceptance criteria implemented and testable
+- API contracts match specifications with examples and error handling
+- Observability instrumentation complete (metrics, logs, traces)
+- Feature flags configured with kill switches and rollback capability
+- Backward compatibility maintained with proper API versioning
+- Edge cases handled: timeouts, retries, idempotency, partial failures
+- Security validations: input sanitization, auth/authz, secrets management
+- Performance considerations: no hotspots, resource-conscious design
+
+**Test Strategy Integration:**
+- Unit tests for business logic with clear isolation
+- Integration tests for API endpoints and data flows  
+- E2E tests for critical user paths and acceptance criteria
+- Performance smoke tests with budget enforcement
+- Security tests for auth, input validation, and data protection
+
 ## Outputs
-- Implemented code and configuration on a feature branch.
-- Updated documentation and decision log.
-- Ready for `code_review`, `sdlc_setup_testing`, and `sdlc_deploy_changes`.
+- Implemented code and configuration on a feature branch
+- Updated documentation and decision log with implementation decisions
+- Machine-readable specs validated and aligned with implementation
+- Ready for `code_review`, `sdlc_test` (renamed from setup_testing), and `sdlc_deploy`

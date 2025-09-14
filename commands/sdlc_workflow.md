@@ -40,17 +40,17 @@ This command creates commits at key checkpoints for traceability:
 ### 1. Intent analysis and sequence proposal
 ```
 Feature Development:
-├── New functionality → sdlc_prd_feature → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_setup_testing → sdlc_deploy_changes
-├── Enhancement → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_setup_testing → sdlc_deploy_changes
-└── Integration → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_setup_testing → sdlc_deploy_changes
+├── New functionality → sdlc_prd_feature → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
+├── Enhancement → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
+└── Integration → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
 
 Bug Resolution:
-├── Critical bug → sdlc_reproduce_bug → sdlc_analyze_bug → sdlc_plan_bug → sdlc_implement_bug → code_review → sdlc_setup_testing → sdlc_deploy_changes (expedited)
-├── Standard bug → sdlc_reproduce_bug → sdlc_analyze_bug → sdlc_plan_bug → sdlc_implement_bug → code_review → sdlc_setup_testing → sdlc_deploy_changes
-└── Complex bug → sdlc_reproduce_bug → sdlc_analyze_bug → sdlc_plan_bug → sdlc_implement_bug → code_review → sdlc_setup_testing → sdlc_deploy_changes
+├── Critical bug → sdlc_reproduce_bug → sdlc_analyze_bug → sdlc_plan_bug → sdlc_implement_bug → code_review → sdlc_test → sdlc_deploy (expedited)
+├── Standard bug → sdlc_reproduce_bug → sdlc_analyze_bug → sdlc_plan_bug → sdlc_implement_bug → code_review → sdlc_test → sdlc_deploy
+└── Complex bug → sdlc_reproduce_bug → sdlc_analyze_bug → sdlc_plan_bug → sdlc_implement_bug → code_review → sdlc_test → sdlc_deploy
 
 Release Management:
-└── Release → code_review → sdlc_setup_testing → sdlc_deploy_changes → release_and_publish
+└── Release → code_review → sdlc_test → sdlc_deploy → release_and_publish
 ```
 
 ### 2. Context gathering and validation
@@ -75,11 +75,11 @@ feature_workflow:
       commands: [code_review]
       gates: [review_approved, security_clear]
     - name: "Testing"
-      commands: [sdlc_setup_testing]
-      gates: [coverage_adequate, integration_passing]
+      commands: [sdlc_test]
+      gates: [coverage_adequate, integration_passing, performance_within_budgets]
     - name: "Deployment"
-      commands: [sdlc_deploy_changes]
-      gates: [staging_verified, production_ready]
+      commands: [sdlc_deploy]
+      gates: [staging_verified, production_ready, observability_active]
 
 bugfix_workflow:
   phases:
@@ -99,11 +99,11 @@ bugfix_workflow:
       commands: [code_review]
       gates: [review_approved]
     - name: "Testing"
-      commands: [sdlc_setup_testing]
-      gates: [fix_verified, no_side_effects]
+      commands: [sdlc_test]
+      gates: [fix_verified, no_side_effects, regression_tests_pass]
     - name: "Deployment"
-      commands: [sdlc_deploy_changes]
-      gates: [hotfix_ready, rollback_plan]
+      commands: [sdlc_deploy]
+      gates: [hotfix_ready, rollback_plan, enhanced_monitoring_active]
 ```
 
 ### 4. Context flow

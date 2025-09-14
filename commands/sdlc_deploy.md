@@ -1,4 +1,4 @@
-# SDLC Deploy Changes $ARGUMENTS
+# SDLC Deploy $ARGUMENTS
 
 ## Purpose
 Specialized deployment workflow that executes safe, reliable, rollback-ready releases. This command
@@ -7,19 +7,20 @@ prepares, executes, and validates deployments; it does not implement features or
 ## Command Usage
 ```bash
 # GitHub deployment
-sdlc_deploy_changes --source github --name api-release --type production --id 101
+sdlc_deploy --source github --name api-release --type production --id 101
 
 # Local deployment
-sdlc_deploy_changes --source local --name hotfix-deploy --type hotfix
+sdlc_deploy --source local --name hotfix-deploy --type hotfix
 
 # Bitbucket deployment
-sdlc_deploy_changes --source bitbucket --name feature-rollout --type staging
+sdlc_deploy --source bitbucket --name feature-rollout --type staging
 
 # Simple usage (auto-detects everything)
-sdlc_deploy_changes --name production-release
+sdlc_deploy --name production-release
 ```
 
 **Simplified Parameters:**
+Files are created ONLY if applicable, e.g. feature new features or simple feature, there is no rollbacl-plan.md and rollout-config.yaml, obervability.yaml nor runbook.yaml.
 - `--name <descriptive-name>`: Workspace name (creates <project_root>/<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <production|staging|hotfix>`: Deployment type (optional, auto-detected)
@@ -60,11 +61,15 @@ This command creates commits at key checkpoints for traceability:
 ```
 <project_root>/<name>/
 ├── plan/
-│   ├── deployment-plan.md   # Steps, roles, runbook
+│   ├── deployment-plan.md   # Steps, roles, runbook with observability
 │   ├── decision-log.md      # Strategy and rationale
-│   └── rollback-plan.md     # Triggers and procedures
+│   └── rollback-plan.md     # Triggers, procedures, and recovery steps
+├── specs/                   # Machine-readable deployment specifications
+│   ├── rollout-config.yaml  # Feature flags, gating checks, backout steps
+│   ├── observability.yaml  # Enhanced monitoring, alerts, SLO tracking
+│   └── runbook.yaml         # Operational procedures and escalation paths
 └── context/
-    └── change-log.md        # Changes included and references
+    └── change-log.md        # Changes included and references with impact analysis
 ```
 
 ## 🔹 EXECUTE
@@ -85,7 +90,31 @@ This command creates commits at key checkpoints for traceability:
 - Announce deployment window and owners; align with stakeholders.
 - Review results and decide on promotion/rollback/post-actions together.
 
+### 5. Comprehensive Deployment Requirements
+
+**Observability and Monitoring:**
+- Enhanced monitoring activated during deployment window
+- SLO tracking with error budget enforcement and alerting
+- Dashboards configured for real-time deployment health visibility
+- Log aggregation and trace collection for troubleshooting
+- Performance metrics baseline and anomaly detection
+
+**Rollout and Rollback Strategy:**
+- Phased rollout with feature flags and kill switches
+- Gating checks at each phase with automated quality gates
+- Clear rollback triggers: error rates, performance degradation, SLO violations
+- Automated backout procedures with data integrity validation
+- Capacity planning and resource scaling considerations
+
+**Operability Requirements:**
+- Runbook updated with operational procedures and troubleshooting steps
+- On-call team briefed with escalation paths and contact information
+- Support documentation updated with feature changes and common issues
+- Post-deployment validation checklist with acceptance criteria
+- Incident response procedures ready with communication templates
+
 ## Outputs
-- Deployment plan and decision log.
-- Execution records and validation results.
-- Rollback status and follow-up actions (if any).
+- Comprehensive deployment plan with observability and rollback procedures
+- Machine-readable deployment configurations (feature flags, monitoring, runbook)
+- Execution records with validation results and quality gate attestations
+- Live monitoring and alerting with SLO tracking and error budget management

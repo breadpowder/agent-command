@@ -65,9 +65,27 @@ This command creates commits at key checkpoints for traceability:
 - Defensive programming for edge cases; avoid performance regressions.
 - Keep changes reversible and well-isolated to simplify rollback.
 
+### 4. Quality Gates and Definition of Done
+
+**Bug Fix Quality Gates:**
+- Root cause addressed with minimal, surgical changes
+- No regression introduced with comprehensive validation
+- Rollback procedures validated and remain functional
+- Enhanced monitoring/logging added for fix validation
+- Test coverage includes regression prevention scenarios
+- Documentation updated with fix details and preventive measures
+
+**Validation Requirements:**
+- Reproduction scenario no longer triggers the bug
+- Related functionality remains unaffected (regression testing)  
+- Performance impact measured and within acceptable bounds
+- Security implications assessed and addressed
+- Backward compatibility maintained
+
 ## Handoff
-- Open PR for `code_review` and coordinate with `sdlc_setup_testing`.
-- Ensure rollback instructions remain valid given the final diff.
+- Open PR for `code_review` and coordinate with `sdlc_test` (renamed)
+- Ensure rollback instructions remain valid given the final implementation
+- Machine-readable specs updated with fix validation requirements
 
 ## Collaboration checkpoints
 - Confirm scope and acceptance before code changes.
