@@ -28,7 +28,7 @@ sdlc_prd_feature --name recommendation-engine
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
-- `git commit -m "sdlc: prd feature <name> - stakeholder analysis complete"`
+- `git commit -m "sdlc: prd feature <name> - requirements and stakeholder analysis complete"`
 - `git commit -m "sdlc: <name> - user story development complete"`
 - `git commit -m "sdlc: <name> - business case documentation complete"`
 - `git commit -m "sdlc: <name> - PRD creation complete"`
@@ -38,7 +38,7 @@ This command creates commits at key checkpoints for traceability:
 
 ## 🔹 PLAN
 
-### 1. Stakeholder Analysis & Requirements Gathering
+### 1. Comprehensive Requirements & Stakeholder Analysis
 
 **Business Stakeholder Identification:**
 - **Product Owners**: Feature champions and business requirements owners
@@ -50,8 +50,7 @@ This command creates commits at key checkpoints for traceability:
 **Requirements Collection Methods:**
 - **Stakeholder Interviews**: One-on-one sessions with key stakeholders
 - **User Research**: Surveys, focus groups, user testing sessions
-- **Market Analysis**: Competitive analysis, industry trends, user feedback
-- **Technical Assessment**: Platform capabilities, integration requirements
+- **Technical Assessment**: Platform capabilities, integration requirements, constraints, and risks
 - **Business Case Analysis**: ROI calculations, success metrics, risk assessment
 
 ### 2. Context Storage (Feature-Focused Structure)
@@ -65,11 +64,25 @@ Store all PRD analysis and documentation in standardized directory structure:
 ├── issue/
 │   ├── stakeholder-analysis.md # Stakeholder mapping and requirements
 │   ├── user-research.md        # User research findings and personas
-│   └── market-analysis.md      # Competitive analysis and market positioning
+│   └── requirements.md         # Complete requirements including constraints and risks
 └── context/
-    ├── source-reference.md     # Original source context and links
-    └── constraints.md          # Technical, business, and regulatory constraints
+    └── source-reference.md     # Original source context and links
 ```
+
+**IMPORTANT**: All PRD documentation must be created under `<project_root>/<name>/` structure where `<name>` is the feature workspace name provided via `--name` parameter.
+
+**Streamlined Structure**: 
+- Removed `market-analysis.md` to focus on internal requirements and stakeholder analysis
+- Consolidated constraints and risk analysis into unified `requirements.md` for comprehensive requirements documentation
+
+**Unified Requirements Document Structure:**
+The `issue/requirements.md` file should include:
+- **Functional Requirements**: Core features and capabilities
+- **Non-Functional Requirements**: Performance, security, scalability, usability
+- **Technical Constraints**: Hardware, software, architecture limitations
+- **Business Constraints**: Performance requirements, operational requirements
+- **Risk Assessment**: Technical and business risks with mitigation strategies
+- **Acceptance Criteria**: Clear validation criteria for each requirement phase
 
 ### 3. User Story Development & Prioritization
 
