@@ -1,7 +1,9 @@
 # USER_LEVEL_CLAUDE.md - Python Development Standards
 
-Global development standards and practices for Python projects in this workspace.
-It is **project-agnostic** and applies to all repositories that include it.
+IMPORTANT:
+1. Before you make any change, create and checkout a feature branch named feature/<feature_name> or bugfix/<issue_name> which is short and descriptive name and Make and then commit your changes in this branch.
+2. You must write automated tests for all code.
+3. You must compile the code and pass ALL tests before committing.
 
 ---
 
@@ -17,21 +19,25 @@ SDLC commands createfeature/issue-specific workspaces:
 
 ```
 <project_root>/<feature_or_issue_name>/
-├── plan/                    # Planning documents and strategies
-│   ├── main-plan.md         # Primary plan and approach
-│   ├── task-breakdown.md    # Detailed task breakdown (2-hour rule)
-│   ├── decision-log.md      # Options, pros/cons, decisions with rationale
-│   ├── architecture.md      # High-level diagrams and contracts
-│   └── implementation.md    # Step-by-step implementation strategy
-├── issue/                   # Issue analysis and requirements
-│   ├── analysis.md          # Problem/requirement analysis
-│   ├── research.md          # Background research and prior art
-│   └── requirements.md      # Specific requirements and acceptance criteria
-├── context/                 # Additional context and references
-│   ├── source-reference.md  # Original source context and links
-│   └── dependencies.md      # Dependencies and relationships
+├── plan/                          # Planning documents and strategies
+│   ├── implementation-plan.md     # Primary plan and approach (strategy, scope, milestones)
+│   ├── task-breakdown.md          # Detailed task breakdown (2-hour rule)
+│   ├── decision-log.md            # Options, pros/cons, decisions with rationale
+│   └── architecture.md            # High-level diagrams and contracts
+├── specs/                         # Machine-readable specifications
+│   ├── api-contract.yaml          # OpenAPI spec with examples and error shapes
+│   ├── config-schema.yaml         # Configuration schema with defaults and validation
+│   ├── observability.yaml         # Metrics, alerts, dashboards, SLOs
+│   └── rollout-config.yaml        # Feature flags, gating checks, backout steps
+├── issue/                         # Issue analysis and requirements
+│   ├── analysis.md                # Problem/requirement analysis
+│   ├── requirements.md            # Specific requirements and acceptance criteria
+│   └── risks.md                   # Risks, mitigations, open questions
+├── context/                       # Additional context and references
+│   ├── source-reference.md        # Original source context and links
+│   └── dependencies.md            # Dependencies and relationships
 └── reflection/
-    └── reflection.md        # Post-implementation analysis
+    └── reflection.md              # Post-implementation analysis
 ```
 
 Each feature/issue workspace must include:
@@ -283,9 +289,13 @@ class MyAgent:
 ### Commit Standards
 * **Frequent commits**: Commit after each logical change and bug fix/feature enhancement to maintain history
 * **Descriptive messages**: Clear, imperative mood
-* **Conventional format**:
-  - Features: `feat: implement feature <name> - summary`
-  - Bug fixes: `fix: resolve bug <name> - summary`
+* **SDLC workflow format**:
+  - Features: `sdlc: implement feature <name> - <summary>`
+  - Bug fixes: `sdlc: implement bug <name> - <summary>`
+  - Planning: `sdlc: plan feature/bug <name> - <summary>`
+  - Testing: `sdlc: test <name> - <summary>`
+  - Deployment: `sdlc: deploy <name> - <summary>`
+* **Standard format** (non-SDLC):
   - Docs: `docs: update documentation for <component>`
   - Refactor: `refactor: improve <component> structure`
 

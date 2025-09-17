@@ -67,14 +67,16 @@ This command creates commits at key checkpoints for traceability:
 8. Rollout preparation: feature flags, kill switches, configuration validation.
 
 ### Quality guidelines (in-implementation)
-- Error handling and input validation follow existing patterns.
-- Security-by-default: least privilege, avoid secrets in code, sanitize inputs.
-- Performance-conscious changes; avoid hotspots and unnecessary allocations.
-- Documentation updates: inline docstrings and `docs/` or README snippets as needed.
+- **Error handling**: Follow patterns from USER_LEVEL_CLAUDE.md § "Error Handling and Resilience" (exception hierarchy, graceful degradation)
+- **Security standards**: Apply USER_LEVEL_CLAUDE.md § "Security Standards" (input validation, secrets management, security checklist)
+- **Logging**: Use standards from USER_LEVEL_CLAUDE.md § "Logging Standards" (centralized logging, appropriate levels, structured format)
+- **Testing**: Follow USER_LEVEL_CLAUDE.md § "Testing Guidelines" (pytest, 80% coverage, TDD patterns)
+- **Performance**: Avoid hotspots, follow USER_LEVEL_CLAUDE.md § "Performance Guidelines" 
+- **Documentation**: Inline docstrings and updates per USER_LEVEL_CLAUDE.md § "Code Quality Standards"
 
 ## Handoff
 - Open a PR and request review using the repository’s checklist.
-- Trigger testing via `sdlc_setup_testing` and update coverage where needed.
+- Trigger testing via `sdlc_test` and update coverage where needed.
 
 ## Collaboration checkpoints
 - Confirm scope and acceptance criteria before coding.
@@ -104,4 +106,4 @@ This command creates commits at key checkpoints for traceability:
 - Implemented code and configuration on a feature branch
 - Updated documentation and decision log with implementation decisions
 - Machine-readable specs validated and aligned with implementation
-- Ready for `code_review`, `sdlc_test` (renamed from setup_testing), and `sdlc_deploy`
+- Ready for `code_review`, `sdlc_test`, and `sdlc_deploy`

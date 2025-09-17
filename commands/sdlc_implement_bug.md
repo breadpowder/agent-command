@@ -3,7 +3,7 @@
 ## Purpose
 Specialized bug fix implementation that executes the approved plan safely and minimally. This
 command focuses on code changes and configuration; testing and deployment are handled by separate
-commands.
+commands. Follows development standards from USER_LEVEL_CLAUDE.md for testing, logging, security, and code quality.
 
 ## Command Usage
 ```bash
