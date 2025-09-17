@@ -16,6 +16,7 @@ set -euo pipefail
 # Destinations:
 #   - ${HOME}/.claude/commands
 #   - ${HOME}/.codex/prompts
+#   - ${HOME}/.claude/CLAUDE.md (from USER_LEVEL_CLAUDE.md)
 
 log() { printf "[sync] %s\n" "$*"; }
 err() { printf "[sync][error] %s\n" "$*" >&2; }
@@ -52,6 +53,7 @@ case "${1:-}" in
     echo "Destinations:"
     echo "  - \${HOME}/.claude/commands"
     echo "  - \${HOME}/.codex/prompts"
+    echo "  - \${HOME}/.claude/CLAUDE.md (from USER_LEVEL_CLAUDE.md)"
     echo ""
     echo "Examples:"
     echo "  sync_agent_commands.sh                    # Use local commands/"
@@ -89,10 +91,12 @@ if [[ "${USE_GITHUB}" == "true" ]]; then
   fi
   
   SOURCE_DIR="${TEMP_CLONE_DIR}/agent-command/commands"
+  USER_LEVEL_CLAUDE_FILE="${TEMP_CLONE_DIR}/agent-command/USER_LEVEL_CLAUDE.md"
   log "Successfully cloned repository"
 else
   # Use provided directory or default local directory
   SOURCE_DIR="${1:-${DEFAULT_ABS_SOURCE}}"
+  USER_LEVEL_CLAUDE_FILE="${SCRIPT_DIR}/USER_LEVEL_CLAUDE.md"
 fi
 
 # Validate source directory exists
@@ -137,9 +141,18 @@ log "-> Syncing to Codex: ${CODEX_DIR}"
 copy_to "${SOURCE_DIR}" "${CODEX_DIR}"
 log "✓ Synced to ${CODEX_DIR}"
 
+# Copy USER_LEVEL_CLAUDE.md to ~/.claude/CLAUDE.md
+if [[ -f "${USER_LEVEL_CLAUDE_FILE}" ]]; then
+  log "-> Copying USER_LEVEL_CLAUDE.md to ~/.claude/CLAUDE.md"
+  cp "${USER_LEVEL_CLAUDE_FILE}" "${HOME}/.claude/CLAUDE.md"
+  log "✓ Copied USER_LEVEL_CLAUDE.md to ${HOME}/.claude/CLAUDE.md"
+else
+  warn "USER_LEVEL_CLAUDE.md not found at: ${USER_LEVEL_CLAUDE_FILE}"
+fi
+
 if [[ "${USE_GITHUB}" == "true" ]]; then
   log "✓ Successfully synced ${file_count} commands from GitHub repository"
 else
   log "✓ Successfully synced ${file_count} commands from local directory"
 fi
-log "Commands are now available for AI agents in both directories."
+log "Commands and user-level CLAUDE.md are now available for AI agents."

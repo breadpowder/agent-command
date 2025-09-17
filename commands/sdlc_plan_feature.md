@@ -59,6 +59,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### 4. Planning artifacts and structure
 Store planning in a standardized structure:
+Files are created ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
 ```
 <project_root>/<name>/
 ├── plan/

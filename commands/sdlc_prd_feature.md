@@ -55,7 +55,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### 2. Context Storage (Feature-Focused Structure)
 Store all PRD analysis and documentation in standardized directory structure:
-Files are created ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
+Files are created or exists ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
 ```
 <project_root>/<name>/
 ├── plan/
