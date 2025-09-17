@@ -141,11 +141,36 @@ log "-> Syncing to Codex: ${CODEX_DIR}"
 copy_to "${SOURCE_DIR}" "${CODEX_DIR}"
 log "✓ Synced to ${CODEX_DIR}"
 
-# Copy USER_LEVEL_CLAUDE.md to ~/.claude/CLAUDE.md
+# Handle USER_LEVEL_CLAUDE.md - add to project CLAUDE.md if user-level exists
 if [[ -f "${USER_LEVEL_CLAUDE_FILE}" ]]; then
-  log "-> Copying USER_LEVEL_CLAUDE.md to ~/.claude/CLAUDE.md"
-  cp "${USER_LEVEL_CLAUDE_FILE}" "${HOME}/.claude/CLAUDE.md"
-  log "✓ Copied USER_LEVEL_CLAUDE.md to ${HOME}/.claude/CLAUDE.md"
+  if [[ -f "${HOME}/.claude/CLAUDE.md" ]]; then
+    log "Existing user-level CLAUDE.md found at ${HOME}/.claude/CLAUDE.md"
+    echo -n "Add USER_LEVEL_CLAUDE.md to current project CLAUDE.md instead? [y/N]: "
+    read -r choice
+    case "${choice,,}" in
+      y|yes)
+        PROJECT_CLAUDE="${SCRIPT_DIR}/../CLAUDE.md"
+        log "-> Adding USER_LEVEL_CLAUDE.md to project CLAUDE.md at ${PROJECT_CLAUDE}"
+        if [[ -f "${PROJECT_CLAUDE}" ]]; then
+          echo "" >> "${PROJECT_CLAUDE}"
+          echo "# === PROJECT-SPECIFIC PYTHON STANDARDS ===" >> "${PROJECT_CLAUDE}"
+          echo "" >> "${PROJECT_CLAUDE}"
+          cat "${USER_LEVEL_CLAUDE_FILE}" >> "${PROJECT_CLAUDE}"
+          log "✓ Appended USER_LEVEL_CLAUDE.md to project CLAUDE.md"
+        else
+          cp "${USER_LEVEL_CLAUDE_FILE}" "${PROJECT_CLAUDE}"
+          log "✓ Created project CLAUDE.md with USER_LEVEL_CLAUDE.md content"
+        fi
+        ;;
+      *)
+        log "Skipping project CLAUDE.md update (user choice)"
+        ;;
+    esac
+  else
+    log "-> Copying USER_LEVEL_CLAUDE.md to ~/.claude/CLAUDE.md"
+    cp "${USER_LEVEL_CLAUDE_FILE}" "${HOME}/.claude/CLAUDE.md"
+    log "✓ Copied USER_LEVEL_CLAUDE.md to ${HOME}/.claude/CLAUDE.md"
+  fi
 else
   warn "USER_LEVEL_CLAUDE.md not found at: ${USER_LEVEL_CLAUDE_FILE}"
 fi
