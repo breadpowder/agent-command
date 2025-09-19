@@ -122,7 +122,8 @@ copy_to() {
   local src="$1" dest="$2"
   if command -v rsync >/dev/null 2>&1; then
     # Trailing slash copies contents of src into dest
-    rsync -a --info=NAME,STATS "${src}/" "${dest}/"
+    # Use -v for verbose output on older rsync versions (macOS default)
+    rsync -av "${src}/" "${dest}/"
   else
     # cp fallback; "." includes hidden files in src
     cp -a "${src}/." "${dest}/"
@@ -147,7 +148,8 @@ if [[ -f "${USER_LEVEL_CLAUDE_FILE}" ]]; then
     log "Existing user-level CLAUDE.md found at ${HOME}/.claude/CLAUDE.md"
     echo -n "Add USER_LEVEL_CLAUDE.md to current project CLAUDE.md instead? [y/N]: "
     read -r choice
-    case "${choice,,}" in
+    choice_lower=$(echo "${choice}" | tr '[:upper:]' '[:lower:]')
+    case "${choice_lower}" in
       y|yes)
         PROJECT_CLAUDE="${SCRIPT_DIR}/../CLAUDE.md"
         log "-> Adding USER_LEVEL_CLAUDE.md to project CLAUDE.md at ${PROJECT_CLAUDE}"
