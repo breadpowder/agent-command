@@ -80,6 +80,10 @@ Each command creates standardized workspace structure:
 - Bug fix commits: `sdlc: <action> bug <name> - <summary>`
 - Shared operation commits: `sdlc: <action> <name> - <summary>`
 
+IMPORTANT RULE: for commits, 
+1. Only commits files you updated in this session, MUST NOT add untracked files
+2. Review changes before commits, check file deletions and ask user for clarity, e.g. if important files like CLAUDE.md are deleled, do ask user to confirm before commit changes.
+
 **Rollback Policy**: 
 - **SECURITY POLICY**: `git reset` is strictly forbidden
 - Always use `git revert <commit_hash>` to maintain complete traceability
