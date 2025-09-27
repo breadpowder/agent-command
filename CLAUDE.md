@@ -3,140 +3,161 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-This is the AgentDK SDLC Commands repository - a universal, project-agnostic development workflow framework that provides standardized commands for comprehensive software development lifecycle management. These commands work across any technology stack, programming language, and team size, providing structured workflows for feature development, bug fixing, code review, refactoring, testing, and deployment. The repository contains documentation-based command specifications that can be synced to AI agent environments for consistent development practices.
 
-## Build and Development Commands
-- **No build process required** - this is a documentation-first repository
-- **Preview markdown**: Use your editor's preview or `glow README.md` (optional)
-- **Lint markdown** (optional): `npx markdownlint-cli "**/*.md"` if available
-- **Quick command audit**: `rg -n 'sdlc_' commands/` to search command documentation
-- **Sync commands to agent environments**: 
-  - `./sync_agent_commands.sh` - sync from local commands directory
-  - `./sync_agent_commands.sh --github` - clone from GitHub and sync latest commands
-  - Copies command specs to `~/.claude/commands` and `~/.codex/prompts`
+This is a Machine Learning Operations (MLOps) platform for Paytm's risk management system. The repository contains infrastructure as code and Kubernetes configurations for a cloud-native ML platform running on AWS.
 
-## Repository Architecture
+## Architecture
 
-### Core Structure
-- **`commands/`**: Command specifications in Markdown format, one file per command
-  - SDLC commands follow pattern: `sdlc_<verb>_<scope>.md` (e.g., `sdlc_implement_feature.md`)
-  - Utility commands: `code_review.md`, `refactor.md`, `release_and_publish.md`
-  - Meta-command: `_meta_reflection.md` for workflow analysis
-- **`README.md`**: Primary user guide, workflows, and examples (source of truth)
-- **`AGENTS.md`**: Repository guidelines and contribution standards
-- **`scripts/`**: Currently empty utility directory
-- **`sync_agent_commands.sh`**: Bash script for syncing commands to agent directories
+### Infrastructure Components
+- **Terraform Infrastructure**: Multi-environment setup with modules for AWS resources
+  - VPC, EMR clusters, EKS, SageMaker, RDS, Route53, ALB
+  - Environment-specific configurations in `terraform/environments/`
+  - Reusable modules in `terraform/modules/`
+- **Kubernetes Applications**: Helm charts for platform services
+  - ArgoCD for GitOps deployment
+  - Apache Superset for data visualization
+  - AWS Load Balancer Controller, External Secrets, Ingress NGINX
+  - Located in `k8s/infra-applications/`
 
-### Command Categories
-**Feature Development Workflow:**
-1. `sdlc_prd_feature` - Product Requirements Document creation
-2. `sdlc_plan_feature` - Feature architecture and design planning  
-3. `sdlc_implement_feature` - Feature implementation and integration
+### EMR Cluster Architecture
+- **Dual-Cluster Pattern**: Each tenant has production (3-master HA) + staging (1-master) clusters
+- **Memory-Optimized Fleets**: r6g/r6a/r5a instances (8 GiB RAM per vCPU) for big data workloads
+- **Shared Infrastructure**: Clusters share Glue databases and S3 paths (no environment separation)
+- **Cost Controls**: Separate budget limits ($1,500 production, $200 staging per tenant)
+- **Autoscaling**: Aggressive memory-based scaling (15% threshold production, 25% staging)
+- **Fleet Diversity**: 5-6 instance types per fleet for high spot availability
 
-**Bug Fix Workflow:**
-1. `sdlc_analyze_bug` - Bug analysis and root cause investigation
-2. `sdlc_reproduce_bug` - Bug reproduction steps and environment setup
-3. `sdlc_plan_bug` - Bug fix planning and strategy development
-4. `sdlc_implement_bug` - Surgical bug fix implementation
+### Key Technologies
+- **Infrastructure**: Terraform, AWS (EMR, EKS, SageMaker, S3, RDS)
+- **Container Orchestration**: Kubernetes, Helm
+- **Data Processing**: Apache Trino, Apache Iceberg
+- **ML Platform**: AWS SageMaker
+- **GitOps**: ArgoCD
+- **Monitoring**: Superset, Prometheus (via servicemonitors)
 
-**Shared Operations:**
-1. `sdlc_test` - Testing infrastructure and test execution
-2. `sdlc_deploy` - Deployment and release management
-3. `sdlc_workflow` - Master orchestrator for complete workflows
+## Common Development Tasks
 
-## Command Structure and Patterns
-
-### Universal Parameters
-All SDLC commands use standardized parameters:
-- `--name <descriptive-name>` - Workspace name (creates `<project_root>/<name>/`)
-- `--source <github|local|bitbucket>` - Input source (optional, defaults to local)
-- `--type <context-specific>` - Command-specific type (optional, auto-detected)
-- `--id <identifier>` - External ID (issue#, PR#, etc) (optional)
-- `--context <file|dir>` - Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"` - Inline user task prompt (optional)
-
-### Workspace Organization
-Each command creates standardized workspace structure:
-```
-<project_root>/<name>/
-├── plan/                  # Planning documents and strategies
-│   ├── main-plan.md       # Primary plan and approach
-│   ├── task-breakdown.md  # Detailed task breakdown (2-hour rule)
-│   ├── decision-log.md    # Options, pros/cons, decisions with rationale
-│   ├── architecture.md    # High-level diagrams and contracts
-│   └── implementation.md  # Step-by-step implementation strategy
-├── issue/                 # Issue analysis and requirements
-│   ├── analysis.md        # Problem/requirement analysis
-│   ├── research.md        # Background research and prior art
-│   └── requirements.md    # Specific requirements and acceptance criteria
-└── context/               # Additional context and references
-    ├── source-reference.md # Original source context and links
-    └── dependencies.md     # Dependencies and relationships
+### Terraform Operations
+```bash
+# Navigate to specific environment/module
+cd terraform/environments/platform/00-infra-vpc/
+terraform init
+terraform plan
+terraform apply
 ```
 
-### Git Integration Requirements
-**Automatic Commits**: All SDLC commands create automatic git commits with consistent patterns:
-- Feature commits: `sdlc: <action> feature <name> - <summary>`
-- Bug fix commits: `sdlc: <action> bug <name> - <summary>`
-- Shared operation commits: `sdlc: <action> <name> - <summary>`
+### AWS Profile Configuration
+**IMPORTANT**: Always use the `pai-risk-mlops` profile for all AWS operations in this repository:
+```bash
+export AWS_PROFILE=pai-risk-mlops
+# Or use --profile flag with AWS CLI commands
+aws --profile pai-risk-mlops sts get-caller-identity
+```
 
-IMPORTANT RULE: for commits, 
-1. Only commits files you updated in this session, MUST NOT add untracked files
-2. Review changes before commits, check file deletions and ask user for clarity, e.g. if important files like CLAUDE.md are deleled, do ask user to confirm before commit changes.
+### Kubernetes/Helm Operations
+```bash
+# Install/upgrade applications with custom values
+helm upgrade --install <app-name> <chart-path> -f <cluster-name>-values.yaml
+```
 
-**Rollback Policy**: 
-- **SECURITY POLICY**: `git reset` is strictly forbidden
-- Always use `git revert <commit_hash>` to maintain complete traceability
-- View workflow history with `git log --oneline --grep="sdlc: <name>"`
+## Important Conventions
 
-## Development Standards and Practices
+### Terraform Structure
+- **Environments**: `terraform/environments/` contains environment-specific configs
+- **Modules**: `terraform/modules/` contains reusable infrastructure modules
+- **State Management**: Each module has its own remote state configuration
+- **Naming**: Resources follow pattern: `{product}-{tenant}-{environment}-{resource}`
 
-### Markdown Conventions
-- **Headers**: Use ATX headings (`#`, `##`), sentence case
-- **Code blocks**: Use fenced blocks with language hints (`bash`, `text`)
-- **Lists**: Hyphen-prefixed (`- `), keep bullets concise, wrap around ~100 chars
-- **File naming**: snake_case, commands as `sdlc_<verb>_<topic>.md`
+### Kubernetes Structure  
+- **Values Files**: Custom values named `{cluster-name}-values.yaml` (e.g., `pai-risk-mlops-platform-values.yaml`)
+- **Templates**: Standard Helm template structure with helpers in `_helpers.tpl`
+- **External Secrets**: Custom external secret templates for sensitive data management
 
-### Documentation Requirements
-- **Examples must be safe and idempotent**: All examples should be copy-pasteable
-- **Consistent parameter usage**: Always use standard flags (`--name`, `--source`, `--type`, `--id`)
-- **Workspace alignment**: Keep outputs aligned with README's "Workspace Organization"
-- **No destructive examples**: Prefer safe alternatives or add cautionary notes
+### File Organization
+- Infrastructure components are numbered (00, 01, 02, etc.) indicating deployment order
+- Helm charts follow standard chart structure with custom value overrides
+- All AWS resources include proper tagging and security configurations
 
-### Security Guidelines
-- **No secrets in documentation**: Never include tokens, API keys, or internal URLs
-- **Safe command demonstrations**: Mark destructive commands clearly
-- **Rollback over reset**: Always demonstrate `git revert` over history rewrites
+## Tenant Management
 
-## Key Workflow Principles
+### Provisioning New Tenants
+Use the automated provisioning script for consistent tenant setup:
+```bash
+./scripts/provision-tenant.sh --tenant <name> --memory-optimized --staging
+```
 
-### 2-Hour Task Rule
-All complex tasks are automatically broken into ≤2 hour chunks with:
-- Clear validation criteria for each chunk
-- Regular checkpoint commits for progress tracking
-- Comprehensive planning before implementation
+### Tenant Structure
+Each tenant gets:
+- Dedicated S3 buckets (artifacts + data)
+- Shared Glue databases (iceberg + raw)
+- Dual EMR clusters (production + staging)
+- Budget controls and alerts
+- CloudWatch monitoring
 
-### Quality Gates
-- Built-in validation steps in each command
-- Security and performance considerations integrated
-- Comprehensive testing strategies for both features and bug fixes
+### Key Files
+- `scripts/provision-tenant.sh` - Automated provisioning
+- `NEW_TENANT.md` - Architecture documentation
+- `terraform/environments/{tenant}/` - Tenant infrastructure
 
-### Workflow Differentiation
-**Feature Development Focus:**
-- User-centered design with PRD creation
-- Scalable architecture and long-term design
-- Business impact analysis and success metrics
+## SageMaker-EMR Integration
 
-**Bug Fix Focus:**
-- Surgical precision with minimal code changes
-- Root cause analysis and comprehensive investigation  
-- Regression prevention and extensive rollback planning
+### Required IAM Permissions
+The SageMaker execution role needs EMR access permissions. Add to the role policy:
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticmapreduce:ListInstances",
+        "elasticmapreduce:DescribeCluster",
+        "elasticmapreduce:ListSteps",
+        "elasticmapreduce:GetBlockPublicAccessConfiguration"
+      ],
+      "Resource": "arn:aws:elasticmapreduce:ap-south-1:880170353725:cluster/*"
+    }
+  ]
+}
+```
 
-## Multi-Source Support
-Commands support GitHub, Bitbucket, and local development with appropriate CLI integration (`gh` for GitHub, Bitbucket CLI/API, local git tools).
+### Connecting from SageMaker Studio
+```python
+%load_ext sagemaker_studio_analytics_extension.magics
+%sm_analytics emr connect --verify-certificate False --cluster-id <cluster-id> --auth-type None --language python
+```
 
-## Testing and Validation
-- Validate examples against AgentDK CLI where installed
-- Ensure workspace outputs match documented structure
-- Test command parameters and flag combinations
-- Verify git integration and commit patterns work correctly
+### Troubleshooting Connection Issues
+1. **AccessDeniedException**: Update SageMaker execution role with EMR permissions
+2. **Cluster Not Found**: Verify cluster ID and region
+3. **Network Issues**: Check security groups allow SageMaker-EMR communication
+
+## Known Limitations
+
+### EMR Auto-Termination
+The terraform EMR module doesn't support auto_termination_policy. For staging clusters requiring auto-termination, implement via:
+- CloudWatch Events + Lambda
+- EMR Step with shutdown action
+- Manual idle timeout monitoring
+
+## Terraform State Management
+
+### Handling State Locks
+**IMPORTANT**: Before forcing a Terraform unlock, investigate the reason for the stuck lock. This helps prevent recurrence and ensures you are not interrupting an active, legitimate operation.
+
+Common causes of stuck locks:
+- Previous terraform operation was interrupted (Ctrl+C, network issues)
+- Multiple concurrent terraform operations
+- CI/CD pipeline failures
+- Crashed terraform process
+
+To safely handle a stuck lock:
+1. Check if anyone else is running terraform: `aws s3 ls s3://pai-risk-mlops-v1-foundation-tfstates/`
+2. Verify no active terraform processes: `ps aux | grep terraform`
+3. If safe to proceed, force unlock: `echo "yes" | terraform force-unlock <lock-id>`
+
+## Security Considerations
+- External Secrets Operator manages sensitive data
+- IRSA (IAM Roles for Service Accounts) for secure AWS access
+- Network policies and security groups properly configured
+- S3 buckets have encryption and access controls enabled

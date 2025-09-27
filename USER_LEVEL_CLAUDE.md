@@ -4,6 +4,8 @@ IMPORTANT:
 1. Before you make any change, create and checkout a feature branch named feature/<feature_name> or bugfix/<issue_name> which is short and descriptive name and Make and then commit your changes in this branch.
 2. You must write automated tests for all code.
 3. You must compile the code and pass ALL tests before committing.
+4. **WORKFLOW CONTEXT EXCLUSION**: NEVER commit markdown files under `<project_root>/<name>/` directories (e.g., `emr-dns-migration/`, `feature-xyz/`, etc.) as these are local workflow context files
+5. **GITIGNORE MANAGEMENT**: Automatically update `.gitignore` to exclude workflow directories by adding patterns like `*/plan/`, `*/issue/`, `*/context/`, or specific workspace names
 
 ---
 
@@ -51,6 +53,18 @@ Each feature/issue workspace must include:
 - `ops_cli_resolution_bug/issue/analysis.md` capturing adjustments like `PYTHONPATH=src` and `OPS_DEBUG`
 
 You MUST read these files for context.
+
+### Workspace File Management
+**Local-Only Policy**: All files within `<project_root>/<name>/` directories are considered local workflow context and should NEVER be committed to git:
+- These files are temporary working documents for planning and analysis
+- They contain intermediate thoughts, research notes, and decision-making processes
+- They are meant to be regenerated or recreated as needed for each workflow session
+- Committing them would clutter the repository with transient documentation
+
+**GitIgnore Integration**: When creating new workspaces, automatically update `.gitignore` with appropriate exclusion patterns:
+- Add specific workspace names: `emr-dns-migration/`, `feature-auth/`, etc.
+- Or use generic patterns: `*/plan/`, `*/issue/`, `*/context/`
+- Ensure the `.gitignore` is committed to maintain consistency across team members
 
 ---
 

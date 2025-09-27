@@ -1,4 +1,4 @@
-qq# Code Review Command $ARGUMENTS.
+# SDLC Code Review $ARGUMENTS
 
 ## Purpose
 Comprehensive code review workflow for development lifecycle that supports multiple sources (GitHub, Bitbucket, local commits, feature branches) with systematic analysis and structured testing validation.
@@ -6,26 +6,35 @@ Comprehensive code review workflow for development lifecycle that supports multi
 ## Command Usage
 ```bash
 # GitHub Issues/PRs
-code_review --source github --type issue --id 123 --name review-auth-fix
-code_review --source github --type pr --id 456 --name review-api-changes
+sdlc_code_review --source github --type issue --id 123 --name review-auth-fix
+sdlc_code_review --source github --type pr --id 456 --name review-api-changes
 
 # Local Git Commits
-code_review --source local --scope commits --id HEAD~3..HEAD --name review-recent-changes
-code_review --source local --scope files --id "src/**/*.py" --name review-python-files
+sdlc_code_review --source local --scope commits --id HEAD~3..HEAD --name review-recent-changes
+sdlc_code_review --source local --scope files --id "src/**/*.py" --name review-python-files
 
 # Bitbucket PRs
-code_review --source bitbucket --type pr --id 789 --name review-bitbucket-pr
+sdlc_code_review --source bitbucket --type pr --id 789 --name review-bitbucket-pr
 
 # Standalone code review
-code_review --source file --scope "src/agents/" --name agent-module-review
+sdlc_code_review --source file --scope "src/agents/" --name agent-module-review
 ```
 
-**Universal Parameters:**
-- `--source <github|local|bitbucket|file>`: Input source
+**Simplified Parameters:**
 - `--name <descriptive-name>`: Workspace name (creates <project_root>/<name>/)
-- `--scope <files|modules|component>`: What to work on
-- `--type <issue|pr|feature|bug|etc>`: Specific type when needed
+- `--source <github|local|bitbucket|file>`: Input source (defaults to local)
+- `--scope <files|modules|component>`: Focus area when reviewing local sources
+- `--type <issue|pr|feature|bug|etc>`: Specific review context when needed
 - `--id <identifier>`: External ID (issue#, PR#, etc) or file/commit identifiers
+- `--context <file|dir>`: Extra documentation or logs to preload into the workspace
+- `--prompt "<instruction>"`: Inline guidance to clarify review goals
+
+**Automatic Git Commits:**
+This command checkpoints review artifacts for traceability:
+- `git commit -m "sdlc: code review <name> - context gathered"`
+- `git commit -m "sdlc: code review <name> - findings documented"`
+- `git commit -m "sdlc: code review <name> - recommendations finalized"`
+- Rollback: use `git revert <commit_hash>` (never `git reset`).
 
 ## 🔹 PLAN
 
