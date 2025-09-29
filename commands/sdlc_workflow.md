@@ -21,7 +21,7 @@ sdlc_development_workflow --name api-enhancement
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/<name>/)
+- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <feature|bugfix|improvement|release>`: Workflow type (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, PR#, etc) (optional)

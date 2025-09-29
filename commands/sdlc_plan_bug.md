@@ -20,7 +20,7 @@ sdlc_plan_bug --name data-corruption-bug
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Bug fix workspace name (creates <project_root>/<name>/)
+- `--name <descriptive-name>`: Bug fix workspace name (creates <project_root>/feature_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <critical|high|medium|low>`: Bug severity (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
@@ -62,7 +62,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/<name>/
+<project_root>/feature_<name>/
 ├── plan/
 │   ├── fix-strategy.md      # Chosen approach and rationale
 │   ├── risk-assessment.md   # Risks and mitigations

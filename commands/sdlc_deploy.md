@@ -21,7 +21,7 @@ sdlc_deploy --name production-release
 
 **Simplified Parameters:**
 Files are created ONLY if applicable, e.g. feature new features or simple feature, there is no rollbacl-plan.md and rollout-config.yaml, obervability.yaml nor runbook.yaml.
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/<name>/)
+- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <production|staging|hotfix>`: Deployment type (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
@@ -59,7 +59,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/<name>/
+<project_root>/feature_<name>/
 ├── plan/
 │   ├── deployment-plan.md   # Steps, roles, runbook with observability
 │   ├── decision-log.md      # Strategy and rationale

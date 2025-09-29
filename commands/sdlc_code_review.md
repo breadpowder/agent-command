@@ -21,7 +21,7 @@ sdlc_code_review --source file --scope "src/agents/" --name agent-module-review
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/<name>/)
+- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
 - `--source <github|local|bitbucket|file>`: Input source (defaults to local)
 - `--scope <files|modules|component>`: Focus area when reviewing local sources
 - `--type <issue|pr|feature|bug|etc>`: Specific review context when needed
@@ -56,7 +56,7 @@ This command checkpoints review artifacts for traceability:
 
 **Structured Workspace Creation:**
 ```
-<project_root>/<name>/
+<project_root>/feature_<name>/
 ├── plan/
 │   ├── main-plan.md           # Primary review strategy and approach
 │   ├── task-breakdown.md      # Detailed task breakdown (2-hour rule)

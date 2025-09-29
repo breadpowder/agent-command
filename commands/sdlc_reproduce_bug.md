@@ -21,7 +21,7 @@ sdlc_reproduce_bug --name data-corruption-bug
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Bug workspace name (creates <project_root>/<name>/)
+- `--name <descriptive-name>`: Bug workspace name (creates <project_root>/feature_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <production|staging|development>`: Environment type (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
@@ -60,7 +60,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/<name>/
+<project_root>/feature_<name>/
 ├── plan/
 │   ├── reproduction-plan.md  # Step-by-step reproduction strategy
 │   ├── test-cases.md         # Automated/manual test cases

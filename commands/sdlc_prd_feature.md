@@ -19,7 +19,7 @@ sdlc_prd_feature --name recommendation-engine
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Feature workspace name (creates <project_root>/<name>/)
+- `--name <descriptive-name>`: Feature workspace name (creates <project_root>/feature_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <frontend|backend|fullstack|mobile>`: Feature type (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, epic#, etc) (optional)
@@ -57,7 +57,7 @@ This command creates commits at key checkpoints for traceability:
 Store all PRD analysis and documentation in standardized directory structure:
 Files are created or exists ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
 ```
-<project_root>/<name>/
+<project_root>/feature_<name>/
 ├── plan/
 │   ├── feature-spec.md         # Single source of truth: PRD + Requirements merged
 │   ├── user-stories.md         # Detailed user stories and acceptance criteria
@@ -73,7 +73,7 @@ Files are created or exists ONLY if applicable, e.g. feature new features or sim
     └── source-reference.md     # Original source context and links
 ```
 
-**IMPORTANT**: All PRD documentation must be created under `<project_root>/<name>/` structure where `<name>` is the feature workspace name provided via `--name` parameter.
+**IMPORTANT**: All PRD documentation must be created under `<project_root>/feature_<name>/` structure where `<name>` is the feature workspace name provided via `--name` parameter.
 
 **Streamlined Structure**: 
 - Single source of truth: `feature-spec.md` merges PRD + Requirements
