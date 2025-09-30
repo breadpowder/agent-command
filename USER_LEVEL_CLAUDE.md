@@ -15,29 +15,40 @@ IMPORTANT:
 * **Update policy**: When implementing a bug fix or feature, update this `CLAUDE.md` so guidance stays authoritative.
 * **Feature/Issue tracking**: After each bug fix, feature, or ad-hoc implementation, update the corresponding workspace documentation.
 * **Reflection**: Use `_meta_reflection` command to append reflection.md for continuous improvement.
+* **Context7 MCP Integration**: Use Context7 Model Context Protocol for real-time documentation retrieval and validation during all development phases.
+
+### Context7 MCP Integration for Development
+The development workflow now integrates Context7 MCP for enhanced documentation-driven development:
+- **Library Resolution**: Automatic resolution of library/framework names to Context7-compatible IDs during planning and implementation
+- **Documentation Retrieval**: Real-time access to current documentation during all development phases using `mcp_context7_get-library-docs`
+- **Best Practices Validation**: Code validation against current framework standards and patterns
+- **Topic-Specific Guidance**: Focused documentation retrieval for specific implementation topics (e.g., 'authentication', 'routing', 'database', 'testing')
+- **Pseudocode Generation**: Structured code examples and architectural patterns in planning phases to aid understanding and implementation
 
 ### Workspace Structure
-SDLC commands create feature/issue-specific workspaces with consistent `feature_` prefix:
+SDLC commands create feature/issue-specific workspaces with consistent `feature_` prefix and Context7 MCP integration:
 
 ```
 <project_root>/feature_<name>/
 ├── plan/                          # Planning documents and strategies
 │   ├── implementation-plan.md     # Primary plan and approach (strategy, scope, milestones)
-│   ├── task-breakdown.md          # Detailed task breakdown (2-hour rule)
-│   ├── decision-log.md            # Options, pros/cons, decisions with rationale
-│   └── architecture.md            # High-level diagrams and contracts
+│   ├── task-breakdown.md          # Detailed task breakdown (2-hour rule) with pseudocode examples
+│   ├── decision-log.md            # Options, pros/cons, decisions with Context7 documentation references
+│   ├── architecture.md            # High-level diagrams and contracts with pseudocode examples
+│   └── pseudocode-examples.md     # Detailed pseudocode for each major component and task
 ├── specs/                         # Machine-readable specifications
 │   ├── api-contract.yaml          # OpenAPI spec with examples and error shapes
 │   ├── config-schema.yaml         # Configuration schema with defaults and validation
 │   ├── observability.yaml         # Metrics, alerts, dashboards, SLOs
 │   └── rollout-config.yaml        # Feature flags, gating checks, backout steps
 ├── issue/                         # Issue analysis and requirements
-│   ├── analysis.md                # Problem/requirement analysis
+│   ├── analysis.md                # Problem/requirement analysis with Context7 validation
 │   ├── requirements.md            # Specific requirements and acceptance criteria
-│   └── risks.md                   # Risks, mitigations, open questions
+│   ├── risks.md                   # Risks, mitigations, open questions
+│   └── context7-validation.md     # Documentation compliance and best practices analysis
 ├── context/                       # Additional context and references
 │   ├── source-reference.md        # Original source context and links
-│   └── dependencies.md            # Dependencies and relationships
+│   └── dependencies.md            # Dependencies and relationships with framework compatibility
 └── reflection/
     └── reflection.md              # Post-implementation analysis
 ```
@@ -331,10 +342,20 @@ class MyAgent:
 ## 10. Development Workflow Integration
 
 ### SDLC Command Integration
-This project integrates with standardized SDLC commands:
-* `sdlc_implement_feature --name <feature>` for new features
-* `sdlc_implement_bug --name <bug>` for bug fixes
+This project integrates with standardized SDLC commands enhanced with Context7 MCP:
+* `sdlc_plan_feature --name <feature>` for feature planning with Context7 documentation retrieval and pseudocode generation
+* `sdlc_implement_feature --name <feature>` for new features with Context7-guided implementation
+* `sdlc_plan_bug --name <bug>` for bug fix planning with Context7 best practices validation
+* `sdlc_implement_bug --name <bug>` for bug fixes with Context7-informed patterns
+* `sdlc_code_review --name <component>` for code review with Context7 validation against current standards
 * `sdlc_test --name <component>` for testing workflows
+
+### Context7 Integration in SDLC Workflow
+Each SDLC command now includes Context7 MCP integration:
+- **Planning Phase**: Resolve library IDs and fetch relevant documentation for informed architecture decisions
+- **Implementation Phase**: Access topic-specific documentation and current best practices during development
+- **Code Review Phase**: Validate code against current framework standards and patterns
+- **Testing Phase**: Use documented testing frameworks and patterns for comprehensive validation
 
 ### Task Management
 * **2-hour rule**: Break tasks into ≤2 hour chunks with validation steps

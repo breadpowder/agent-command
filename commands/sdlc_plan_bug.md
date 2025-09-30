@@ -36,15 +36,22 @@ This command creates commits at key checkpoints for traceability:
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
 
 ## 🔹 PLAN
-- ### 1. Inputs and confirmation
+### 1. Inputs and confirmation
 - Import artifacts from `sdlc_reproduce_bug` and `sdlc_analyze_bug`, plus any `--context` files
   and `--prompt` guidance provided by the user.
-- Confirm root cause, constraints, and acceptance criteria for resolution.
+- **Context7 Documentation Sync**: Resolve library/framework IDs for technologies involved in the bug and retrieve current documentation using `mcp_context7_get-library-docs`.
+- **Best Practices Review**: Access current bug fix patterns and error handling documentation for the affected frameworks.
+- Confirm root cause, constraints, and acceptance criteria for resolution with documentation-informed analysis.
 
 ### 2. Fix options with trade-offs
-- Draft 2–3 fix approaches with pros/cons, risk profile, and estimated effort.
-- Consider scope minimization, compatibility, and regression prevention.
-- Decision gate: present options and record selected approach in `plan/decision-log.md`.
+- **Documentation-Informed Fix Approaches**: Draft 2–3 fix approaches with pros/cons, risk profile, and estimated effort, validated against current framework documentation and best practices.
+- **Compatibility Analysis**: Consider scope minimization, compatibility, and regression prevention using Context7-documented migration and compatibility guidelines.
+- **Pseudocode Fix Examples**: Generate pseudocode examples for each fix approach showing:
+  - Root cause resolution strategy
+  - Error handling and validation patterns
+  - Integration points and side effects
+  - Rollback and recovery mechanisms
+- Decision gate: present options with pseudocode examples and record selected approach with Context7 documentation references in `plan/decision-log.md`.
 
 ### 3. Risk assessment and mitigation
 - Identify technical, data integrity, performance, and integration risks.
@@ -64,10 +71,11 @@ This command creates commits at key checkpoints for traceability:
 ```
 <project_root>/feature_<name>/
 ├── plan/
-│   ├── fix-strategy.md      # Chosen approach and rationale
-│   ├── risk-assessment.md   # Risks and mitigations
-│   ├── rollback-plan.md     # Recovery procedures
-│   └── decision-log.md      # Options considered and decision
+│   ├── fix-strategy.md      # Chosen approach and rationale with Context7 references
+│   ├── risk-assessment.md   # Risks and mitigations using framework-specific patterns
+│   ├── rollback-plan.md     # Recovery procedures following documented best practices
+│   ├── decision-log.md      # Options considered and decision with Context7 documentation
+│   └── pseudocode-fixes.md  # Detailed pseudocode for each fix approach and implementation
 ├── specs/                   # Machine-readable fix specifications
 │   ├── test-cases.json      # Regression tests and validation scenarios
 │   ├── rollback-config.yaml # Automated rollback triggers and procedures

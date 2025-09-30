@@ -41,21 +41,35 @@ This command creates commits at key checkpoints for traceability:
 ### 1. Context gathering and analysis
 - Requirement analysis: parse stories, acceptance criteria, constraints, assumptions, plus any
   provided `--context` materials and `--prompt` intent.
+- **Library/Framework Identification**: Extract mentioned technologies, libraries, and frameworks from requirements.
+- **Context7 Documentation Retrieval**: Use `mcp_context7_resolve-library-id` to resolve library names, then `mcp_context7_get-library-docs` to fetch current documentation for identified technologies.
 - Stakeholder mapping: users, internal teams, compliance, external integrations.
-- Technical feasibility: identify complexity hot-spots and integration points.
+- Technical feasibility: identify complexity hot-spots and integration points with documentation-informed analysis.
 - Business impact: value, scope boundaries, out-of-scope items.
 
 ### 2. Options analysis and decision
-- Architecture options: list 2–3 viable approaches with pros/cons and risks.
-- Technology choices: alternatives with trade-offs and constraints.
-- Data model options: implications for migrations and compatibility.
-- Decision gate: present options to the user and record the selection and rationale in
+- **Documentation-Informed Architecture**: Use Context7 documentation to evaluate 2–3 viable approaches with current best practices, pros/cons, and risks.
+- **Technology choices**: Alternatives with trade-offs and constraints, validated against latest documentation and compatibility matrices.
+- **Data model options**: Implications for migrations and compatibility, informed by current framework documentation.
+- **Pseudocode Architecture Generation**: Create high-level pseudocode showing:
+  - Main component structure and interactions
+  - Data flow patterns between components
+  - Integration points with external systems
+  - Error handling and recovery patterns
+- Decision gate: present options with pseudocode examples to the user and record the selection and rationale in
   `plan/decision-log.md` before proceeding.
 
 ### 3. Task breakdown (2-hour rule)
-- Decompose into independent, verifiable tasks ≤2h each.
-- Define validation criteria per task and explicit dependencies.
-- Order for incremental value and early risk reduction.
+- **Documentation-Enhanced Task Decomposition**: Decompose into independent, verifiable tasks ≤2h each, with Context7 documentation informing implementation approach.
+- **Task-Level Pseudocode Generation**: For each task, create structured pseudocode showing:
+  - Step-by-step implementation approach
+  - Key function/method signatures and structure
+  - Data transformation patterns
+  - Error handling and validation logic
+  - Integration patterns with dependencies
+- **Validation Criteria**: Define validation criteria per task with specific test cases and acceptance criteria.
+- **Dependency Mapping**: Explicit dependencies with Context7-informed integration patterns.
+- **Risk-Ordered Implementation**: Order for incremental value and early risk reduction based on documentation complexity analysis.
 
 ### 4. Planning artifacts and structure
 Store planning in a standardized structure:
@@ -64,9 +78,10 @@ Files are created ONLY if applicable, e.g. feature new features or simple featur
 <project_root>/feature_<name>/
 ├── plan/
 │   ├── implementation-plan.md  # Strategy, scope, milestones (separate from PRD)
-│   ├── task-breakdown.md       # 2-hour tasks with acceptance criteria
-│   ├── decision-log.md         # Options, pros/cons, chosen decisions
-│   └── architecture.md         # High-level diagrams and contracts
+│   ├── task-breakdown.md       # 2-hour tasks with acceptance criteria and pseudocode
+│   ├── decision-log.md         # Options, pros/cons, chosen decisions with Context7 references
+│   ├── architecture.md         # High-level diagrams and contracts with pseudocode examples
+│   └── pseudocode-examples.md  # Detailed pseudocode for each major component and task
 ├── specs/                      # Machine-readable specifications  
 │   ├── api-contract.yaml       # OpenAPI spec with examples and error shapes
 │   ├── config-schema.yaml      # Configuration schema with defaults and validation
@@ -88,15 +103,17 @@ Files are created ONLY if applicable, e.g. feature new features or simple featur
 
 **Definition of Ready - Before Implementation:**
 - Requirements analysis complete with clear boundaries and constraints
-- Architecture options evaluated with 2-3 viable approaches documented
-- Technology choices justified with trade-offs and constraints analysis
-- Data model implications assessed for migrations and compatibility  
-- Task breakdown complete with ≤2h tasks and validation criteria
-- Dependencies mapped with explicit ordering and risk assessment
-- Machine-readable specs created (API contracts, config schemas)
-- Observability plan defined with metrics, alerts, and SLO targets
+- **Context7 Documentation Integration**: All identified libraries/frameworks resolved and current documentation retrieved
+- Architecture options evaluated with 2-3 viable approaches documented with Context7-informed best practices
+- Technology choices justified with trade-offs and constraints analysis using latest documentation
+- Data model implications assessed for migrations and compatibility with framework-specific patterns
+- **Comprehensive Pseudocode Generation**: Task breakdown complete with ≤2h tasks, validation criteria, and detailed pseudocode examples
+- Dependencies mapped with explicit ordering and risk assessment using documentation-informed integration patterns
+- Machine-readable specs created (API contracts, config schemas) validated against current standards
+- Observability plan defined with metrics, alerts, and SLO targets following framework best practices
 - Rollout strategy planned with feature flags and backout procedures
-- Decision log updated with selected options and rationale
+- Decision log updated with selected options, rationale, and Context7 documentation references
+- **Pseudocode Validation**: All major components and tasks have clear, implementable pseudocode examples
 
 **Traceability Requirements:**
 - Map Goals → Requirements → Tests → Tasks

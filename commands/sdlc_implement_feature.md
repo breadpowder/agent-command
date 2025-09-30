@@ -38,14 +38,18 @@ This command creates commits at key checkpoints for traceability:
 
 ## 🔹 PLAN
 ### 1. Scope confirmation
-- Load planning artifacts: requirements, decision log, task breakdown, and any `--context` files
+- Load planning artifacts: requirements, decision log, task breakdown, pseudocode examples, and any `--context` files
   or `--prompt` details provided.
+- **Context7 Documentation Sync**: Refresh library documentation using `mcp_context7_get-library-docs` for any libraries identified in planning to ensure latest API information.
+- **Pseudocode Review**: Validate pseudocode examples from planning phase and prepare for implementation.
 - Confirm acceptance criteria and out-of-scope items with the user.
 
 ### 2. Design choices and options
-- Present focused choices where relevant (API shape, storage format, error strategy) with
-  pros/cons and impact on complexity, performance, and compatibility.
-- Decision gate: record selected options in `<name>/plan/decision-log.md` before coding.
+- **Documentation-Informed Design**: Present focused choices where relevant (API shape, storage format, error strategy) with
+  pros/cons and impact on complexity, performance, and compatibility, validated against current Context7 documentation.
+- **Topic-Specific Documentation Retrieval**: Use `mcp_context7_get-library-docs` with specific topics (e.g., 'authentication', 'routing', 'database') as implementation needs arise.
+- **Pseudocode Refinement**: Update and refine pseudocode based on latest documentation patterns and best practices.
+- Decision gate: record selected options in `<name>/plan/decision-log.md` with Context7 documentation references before coding.
 
 ### 3. Task breakdown (2-hour rule)
 - Sequence tasks for incremental value; keep tasks ≤2h with clear validation criteria.
@@ -57,22 +61,29 @@ This command creates commits at key checkpoints for traceability:
   (`feature/<name>` or `feat/<ticket>`). Commit incrementally and atomically.
 
 ### Implementation steps
-1. Foundation: data models, interfaces, configuration scaffolding.
-2. Business logic: core functionality behind feature flags where appropriate.
-3. API/surface: endpoints, handlers, UI components, or CLIs as applicable.
-4. Integration: connect to dependencies and existing modules.
-5. Observability: add logging, metrics, traces with SLO tracking.
-6. Backward compatibility: API versioning, schema evolution, migration safety.
-7. Edge cases and failure modes: timeouts, retries, idempotency, partial failures.
-8. Rollout preparation: feature flags, kill switches, configuration validation.
+1. **Foundation with Context7 Guidance**: Data models, interfaces, configuration scaffolding using current framework patterns from Context7 documentation.
+2. **Business logic**: Core functionality behind feature flags where appropriate, implementing pseudocode patterns with Context7-informed best practices.
+3. **API/surface**: Endpoints, handlers, UI components, or CLIs as applicable, following current API design patterns from documentation.
+4. **Integration**: Connect to dependencies and existing modules using Context7-documented integration patterns and compatibility guidelines.
+5. **Observability**: Add logging, metrics, traces with SLO tracking following framework-specific observability patterns.
+6. **Backward compatibility**: API versioning, schema evolution, migration safety using documented migration strategies.
+7. **Edge cases and failure modes**: Timeouts, retries, idempotency, partial failures following framework error handling patterns.
+8. **Rollout preparation**: Feature flags, kill switches, configuration validation using documented deployment strategies.
+
+### Context7 Integration During Implementation
+- **Just-in-Time Documentation**: Retrieve specific documentation topics as each implementation step begins
+- **Pattern Validation**: Compare implementation against current best practices and patterns
+- **API Compatibility**: Validate API usage against latest library documentation
+- **Error Handling**: Use documented error handling patterns and exception hierarchies
 
 ### Quality guidelines (in-implementation)
-- **Error handling**: Follow patterns from USER_LEVEL_CLAUDE.md § "Error Handling and Resilience" (exception hierarchy, graceful degradation)
-- **Security standards**: Apply USER_LEVEL_CLAUDE.md § "Security Standards" (input validation, secrets management, security checklist)
-- **Logging**: Use standards from USER_LEVEL_CLAUDE.md § "Logging Standards" (centralized logging, appropriate levels, structured format)
-- **Testing**: Follow USER_LEVEL_CLAUDE.md § "Testing Guidelines" (pytest, 80% coverage, TDD patterns)
-- **Performance**: Avoid hotspots, follow USER_LEVEL_CLAUDE.md § "Performance Guidelines" 
-- **Documentation**: Inline docstrings and updates per USER_LEVEL_CLAUDE.md § "Code Quality Standards"
+- **Error handling**: Follow patterns from USER_LEVEL_CLAUDE.md § "Error Handling and Resilience" (exception hierarchy, graceful degradation) enhanced with Context7-documented framework-specific patterns
+- **Security standards**: Apply USER_LEVEL_CLAUDE.md § "Security Standards" (input validation, secrets management, security checklist) validated against current security best practices from Context7
+- **Logging**: Use standards from USER_LEVEL_CLAUDE.md § "Logging Standards" (centralized logging, appropriate levels, structured format) following framework-specific logging patterns
+- **Testing**: Follow USER_LEVEL_CLAUDE.md § "Testing Guidelines" (pytest, 80% coverage, TDD patterns) using Context7-documented testing frameworks and patterns
+- **Performance**: Avoid hotspots, follow USER_LEVEL_CLAUDE.md § "Performance Guidelines" enhanced with framework-specific optimization patterns from Context7
+- **Documentation**: Inline docstrings and updates per USER_LEVEL_CLAUDE.md § "Code Quality Standards" following current documentation standards from Context7
+- **Context7 Validation**: Continuously validate implementation patterns against latest documentation and best practices
 
 ## Handoff
 - Open a PR and request review using the repository’s checklist.

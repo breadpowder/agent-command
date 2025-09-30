@@ -48,9 +48,11 @@ This command checkpoints review artifacts for traceability:
 
 **Review Analysis Framework:**
 - Extract code changes, comments, and development context
-- Identify patterns, anti-patterns, and improvement opportunities
-- Research related issues, previous reviews, and established patterns
-- Map dependencies, impacts, and potential regression risks
+- **Context7 Documentation Integration**: Resolve library/framework IDs for technologies used in the code under review
+- **Current Best Practices Retrieval**: Use `mcp_context7_get-library-docs` to fetch latest documentation for validation against current standards
+- Identify patterns, anti-patterns, and improvement opportunities using Context7-informed analysis
+- Research related issues, previous reviews, and established patterns enhanced with current documentation
+- Map dependencies, impacts, and potential regression risks with framework-specific compatibility information
 
 ### 2. Context Storage (Standard Structure)
 
@@ -62,9 +64,10 @@ This command checkpoints review artifacts for traceability:
 │   ├── task-breakdown.md      # Detailed task breakdown (2-hour rule)
 │   └── implementation.md      # Step-by-step fix implementation strategy
 ├── issue/
-│   ├── analysis.md            # Code quality analysis results
-│   ├── research.md            # Security findings and performance analysis
-│   └── requirements.md        # Fix requirements and acceptance criteria
+│   ├── analysis.md            # Code quality analysis results with Context7 validation
+│   ├── research.md            # Security findings and performance analysis with current best practices
+│   ├── requirements.md        # Fix requirements and acceptance criteria
+│   └── context7-validation.md # Documentation compliance and best practices analysis
 └── context/
     ├── source-reference.md    # Original source context and links
     └── dependencies.md        # Related changes, commits, and dependencies
@@ -78,10 +81,12 @@ This command checkpoints review artifacts for traceability:
 ### 3. Requirements Analysis & Planning
 
 **Review Scope Definition:**
-- **Security Analysis**: Vulnerability assessment and security best practices
-- **Performance Review**: Optimization opportunities and resource efficiency
-- **Code Quality**: Maintainability, readability, and design pattern compliance
-- **Testing Coverage**: Test completeness and quality assessment
+- **Security Analysis**: Vulnerability assessment and security best practices validated against Context7 security documentation
+- **Performance Review**: Optimization opportunities and resource efficiency using framework-specific performance patterns
+- **Code Quality**: Maintainability, readability, and design pattern compliance with current framework standards
+- **Testing Coverage**: Test completeness and quality assessment using Context7-documented testing patterns
+- **Documentation Compliance**: Validate code against current API documentation and best practices
+- **Framework Compatibility**: Ensure code follows current framework patterns and deprecation guidelines
 
 **Priority Classification:**
 - **Critical**: Security vulnerabilities, breaking bugs, major performance issues
@@ -92,12 +97,20 @@ This command checkpoints review artifacts for traceability:
 ### 4. Task Breakdown (2-Hour Rule)
 
 **CRITICAL: Systematic Review Process**
-- **Phase 1**: Code analysis and issue identification (≤2h)
-- **Phase 2**: Security and performance assessment (≤2h)
-- **Phase 3**: Priority-based fix implementation (≤2h per priority group)
-- **Phase 4**: Test coverage improvement and validation (≤2h)
-- **Phase 5**: Documentation updates and knowledge transfer (≤2h)
-- **Phase 6**: Final integration testing and deployment (≤2h)
+- **Phase 1**: Code analysis and issue identification with Context7 validation (≤2h)
+- **Phase 2**: Security and performance assessment using current best practices documentation (≤2h)
+- **Phase 3**: Priority-based fix implementation with Context7-informed patterns (≤2h per priority group)
+- **Phase 4**: Test coverage improvement and validation using documented testing frameworks (≤2h)
+- **Phase 5**: Documentation updates and knowledge transfer with current standards (≤2h)
+- **Phase 6**: Final integration testing and deployment following documented deployment patterns (≤2h)
+
+**Context7 Integration Per Phase:**
+- **Phase 1**: Retrieve documentation for all identified libraries/frameworks in the code
+- **Phase 2**: Access security and performance best practices for validation
+- **Phase 3**: Use current patterns and anti-patterns for fix implementation
+- **Phase 4**: Apply documented testing strategies and frameworks
+- **Phase 5**: Follow current documentation standards and practices
+- **Phase 6**: Use documented deployment and integration patterns
 
 **Task Independence:**
 - Each fix provides standalone, testable improvement
@@ -123,11 +136,17 @@ This command checkpoints review artifacts for traceability:
 ### Implementation Strategy
 
 **Systematic Fix Implementation:**
-1. **Priority-Based Fixes**: Address critical and high-priority issues first
-2. **Incremental Implementation**: Small, testable changes following task breakdown
-3. **Continuous Validation**: Test each fix individually before proceeding
-4. **Quality Gates**: Code quality, security, and performance validation
-5. **Documentation Updates**: Maintain current documentation throughout process
+1. **Priority-Based Fixes**: Address critical and high-priority issues first using Context7-validated solutions
+2. **Incremental Implementation**: Small, testable changes following task breakdown with pseudocode examples
+3. **Continuous Validation**: Test each fix individually against current documentation standards before proceeding
+4. **Quality Gates**: Code quality, security, and performance validation using Context7 best practices
+5. **Documentation Updates**: Maintain current documentation throughout process following Context7 standards
+
+**Context7-Enhanced Implementation:**
+- **Pattern Application**: Apply current framework patterns and best practices from documentation
+- **API Validation**: Ensure all API usage follows current documentation and deprecation guidelines
+- **Security Compliance**: Validate security implementations against current security documentation
+- **Performance Optimization**: Use documented performance patterns and optimization strategies
 
 ### Step-by-Step Development
 
