@@ -40,7 +40,8 @@ This command creates commits at key checkpoints for traceability:
 ### 1. Intent analysis and sequence proposal
 ```
 Feature Development:
-├── New functionality → sdlc_prd_feature → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
+├── New functionality → sdlc_understand_requirement → sdlc_prd_feature → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
+├── Complex requirements → sdlc_understand_requirement → sdlc_prd_feature → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
 ├── Enhancement → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
 └── Integration → sdlc_plan_feature → sdlc_implement_feature → code_review → sdlc_test → sdlc_deploy
 

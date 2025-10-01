@@ -49,6 +49,7 @@ To use these commands with AI agents (Claude, Codex, etc.), sync them to your lo
 ## 🎯 Refactored Command Structure
 
 ### **Feature Development Commands:**
+- **`sdlc_understand_requirement`**: Initial requirement understanding and clarification from raw user input
 - **`sdlc_prd_feature`**: Product Requirements Document creation for new features
 - **`sdlc_plan_feature`**: Feature architecture and design planning
 - **`sdlc_implement_feature`**: Feature implementation and integration
@@ -68,19 +69,22 @@ To use these commands with AI agents (Claude, Codex, etc.), sync them to your lo
 
 ### **Feature Development Lifecycle:**
 ```bash
-# Step 1: Create Product Requirements Document
+# Step 1: Understand and clarify initial requirements (for complex/unclear requirements)
+sdlc_understand_requirement --name user-authentication --source github --prompt "Need better user login system"
+
+# Step 2: Create Product Requirements Document
 sdlc_prd_feature --name user-authentication --source github --type backend --id 123
 
-# Step 2: Plan feature architecture and design
+# Step 3: Plan feature architecture and design
 sdlc_plan_feature --name user-authentication --source github --type backend --id 123
 
-# Step 3: Implement the feature
+# Step 4: Implement the feature
 sdlc_implement_feature --name user-authentication --source github --type backend --id 123
 
-# Step 4: Setup comprehensive testing
+# Step 5: Setup comprehensive testing
 sdlc_setup_testing --name user-authentication --type feature
 
-# Step 5: Deploy the feature
+# Step 6: Deploy the feature
 sdlc_deploy_changes --name user-authentication --type release
 ```
 
