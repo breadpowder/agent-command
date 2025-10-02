@@ -3,7 +3,7 @@
 ## Context first
 - Gather relevant context from the existing
   task_<name>/ stucture before planning or executing any task.
-- Context7 mcp references are recommended; use them only when you need to refer to or verify APIs.
+- Context7 mcpreferences are recommended; use them only when you need to refer to or verify APIs.
 
 IMPORTANT:
 1. Before you make any change, create and checkout a feature branch named feature/<feature_name> or bugfix/<issue_name> which is short and descriptive name and Make and then commit your changes in this branch.
@@ -48,9 +48,6 @@ SDLC commands create and maintans feature or issue-specific workspaces with cons
 │   ├── user-stories.md                      # user stories + acceptance criteria
 │   ├── business-case.md                     # business value and success metrics
 │   ├── api-contract.yaml                    # OpenAPI (if applicable)
-│   ├── acceptance-tests.json                # structured acceptance criteria
-│   ├── observability.yaml                   # SLOs, alerts, dashboards
-│   └── rollout-config.yaml                  # feature flags and rollout
 ├── requirement/
 │   ├── analysis/requirement_analysis.md
 │   ├── user-stories/stories.md                  # optional (features)
@@ -416,3 +413,19 @@ Each SDLC command now includes Context7 MCP integration:
 ---
 
 *This document serves as the authoritative source for Python development standards and should be updated with each significant project evolution.*
+
+
+## CRITICAL: Use ripgrep, not grep
+NEVER use grep for project-wide searches (slow, ignores .gitignore). ALWAYS use rg.
+
+- `rg "pattern"` — search content
+- `rg --files | rg "name"` — find files
+- `rg -t python "def"` — language filters
+
+## File finding
+
+- Prefer `fd` (or `fdfind` on Debian/Ubuntu). Respects .gitignore.
+
+## JSON
+
+- Use `jq` for parsing and transformations.
