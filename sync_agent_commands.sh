@@ -4,10 +4,11 @@ set -euo pipefail
 # Sync AgentDK command specs to local agent prompt directories.
 #
 # Usage:
-#   sync_agent_commands.sh [SOURCE_DIR|--github]
+#   sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps]
 #
 # Options:
 #   --github                Clone from GitHub repo and sync from there
+#   --install-deps          Install required CLI tools (ripgrep, fd/fdfind, jq)
 #   SOURCE_DIR              Use explicit local directory path
 #   (no args)               Use <repo_root>/commands (relative to script location)
 #
@@ -26,6 +27,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 DEFAULT_ABS_SOURCE="${SCRIPT_DIR}/commands"
 GITHUB_REPO="https://github.com/breadpowder/agent-command.git"
 TEMP_CLONE_DIR=""
+INSTALL_DEPS=false
 
 # Cleanup function for temporary directory
 cleanup() {
@@ -41,10 +43,11 @@ case "${1:-}" in
   --help|-h|help)
     echo "Sync AgentDK command specs to local agent prompt directories."
     echo ""
-    echo "Usage: sync_agent_commands.sh [SOURCE_DIR|--github]"
+    echo "Usage: sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps]"
     echo ""
     echo "Options:"
     echo "  --github              Clone from GitHub repo and sync from there"
+    echo "  --install-deps        Install ripgrep, fd/fdfind, jq based on OS"
     echo "  SOURCE_DIR            Use explicit local directory path"
     echo "  (no arguments)        Use <repo_root>/commands (relative to script)"
     echo ""
@@ -56,9 +59,10 @@ case "${1:-}" in
     echo "  - \${HOME}/.claude/CLAUDE.md (from USER_LEVEL_CLAUDE.md)"
     echo ""
     echo "Examples:"
-    echo "  sync_agent_commands.sh                    # Use local commands/"
-    echo "  sync_agent_commands.sh --github           # Clone from GitHub"
-    echo "  sync_agent_commands.sh /path/to/commands  # Use custom path"
+    echo "  sync_agent_commands.sh                           # Use local commands/"
+    echo "  sync_agent_commands.sh --github                  # Clone from GitHub"
+    echo "  sync_agent_commands.sh --install-deps           # Install tools"
+    echo "  sync_agent_commands.sh /path/to/commands         # Use custom path"
     exit 0
     ;;
   --github)
@@ -68,6 +72,100 @@ case "${1:-}" in
     USE_GITHUB=false
     ;;
 esac
+
+# Optional argument: --install-deps (accept in either position)
+if [[ "${2:-}" == "--install-deps" || "${1:-}" == "--install-deps" ]]; then
+  INSTALL_DEPS=true
+fi
+
+# Support --github passed as the second argument (after --install-deps)
+if [[ "${2:-}" == "--github" ]]; then
+  USE_GITHUB=true
+fi
+
+# Detect OS and package manager for optional installs
+detect_os() {
+  if [[ "$(uname -s)" == "Darwin" ]]; then
+    echo "macos"
+    return 0
+  fi
+  if [[ -f /etc/os-release ]]; then
+    # shellcheck disable=SC1091
+    . /etc/os-release
+    case "${ID_LIKE:-$ID}" in
+      *debian*|*ubuntu*|debian|ubuntu)
+        echo "debian"
+        return 0
+        ;;
+    esac
+  fi
+  echo "unknown"
+}
+
+ensure_fd_alias() {
+  # On Debian/Ubuntu, fd is installed as fdfind; create a user-level shim if needed
+  if command -v fd >/dev/null 2>&1; then
+    return 0
+  fi
+  if command -v fdfind >/dev/null 2>&1; then
+    local target
+    target="$(command -v fdfind)"
+    mkdir -p "${HOME}/.local/bin"
+    if [[ ! -e "${HOME}/.local/bin/fd" ]]; then
+      ln -s "${target}" "${HOME}/.local/bin/fd"
+      log "Created user-level symlink: ${HOME}/.local/bin/fd -> ${target}"
+    fi
+    case ":${PATH}:" in
+      *":${HOME}/.local/bin:"*) : ;;
+      *)
+        warn "~/.local/bin not in PATH. Add: export PATH=\"${HOME}/.local/bin:\$PATH\""
+        ;;
+    esac
+  fi
+}
+
+install_deps() {
+  local os
+  os="$(detect_os)"
+  case "${os}" in
+    macos)
+      if ! command -v brew >/dev/null 2>&1; then
+        err "Homebrew not found. Install from https://brew.sh then re-run with --install-deps"
+        return 1
+      fi
+      log "Installing ripgrep, fd, jq via Homebrew"
+      brew install ripgrep fd jq || {
+        err "brew install failed"
+        return 1
+      }
+      ;;
+    debian)
+      if ! command -v sudo >/dev/null 2>&1; then
+        warn "sudo not found; attempting apt without sudo (may fail)"
+        log "Running: apt update && apt install -y ripgrep fd-find jq"
+        apt update && apt install -y ripgrep fd-find jq || {
+          err "apt install failed"
+          return 1
+        }
+      else
+        log "Installing ripgrep, fd-find, jq via apt"
+        sudo apt update && sudo apt install -y ripgrep fd-find jq || {
+          err "apt install failed"
+          return 1
+        }
+      fi
+      ensure_fd_alias
+      ;;
+    *)
+      warn "Unknown OS. Please install manually:"
+      echo "  macOS: brew install ripgrep fd jq"
+      echo "  Debian/Ubuntu: sudo apt update && sudo apt install -y ripgrep fd-find jq"
+      echo "  Then ensure \"fd\" is available (alias/symlink to fdfind)."
+      return 1
+      ;;
+  esac
+  log "Dependency installation complete"
+}
 
 # Handle GitHub clone option
 if [[ "${USE_GITHUB}" == "true" ]]; then
@@ -105,7 +203,7 @@ if [[ ! -d "${SOURCE_DIR}" ]]; then
   if [[ "${USE_GITHUB}" == "true" ]]; then
     err "Repository may not contain a 'commands' directory"
   else
-    err "Usage: sync_agent_commands.sh [SOURCE_DIR|--github]"
+    err "Usage: sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps]"
     err "  --github: Clone from GitHub and sync"
     err "  SOURCE_DIR: Provide explicit path to commands directory"
     err "Use --help for more information"
@@ -130,8 +228,18 @@ copy_to() {
   fi
 }
 
-# Count files to be synced
-file_count=$(find "${SOURCE_DIR}" -name "*.md" | wc -l)
+# Optionally install dependencies before syncing
+if [[ "${INSTALL_DEPS}" == "true" ]]; then
+  log "--install-deps requested"
+  install_deps || warn "Dependency installation encountered issues; continuing sync"
+fi
+
+# Count files to be synced (prefer ripgrep if available)
+if command -v rg >/dev/null 2>&1; then
+  file_count=$(rg --files -g '*.md' "${SOURCE_DIR}" | wc -l)
+else
+  file_count=$(find "${SOURCE_DIR}" -name "*.md" | wc -l)
+fi
 log "Found ${file_count} command files in: ${SOURCE_DIR}"
 
 log "-> Syncing to Claude: ${CLAUDE_DIR}"
@@ -183,3 +291,15 @@ else
   log "✓ Successfully synced ${file_count} commands from local directory"
 fi
 log "Commands and user-level CLAUDE.md are now available for AI agents."
+
+# Helpful guidance for agent CLI usage (tooling best practices)
+cat <<'EOF'
+[sync] Tips for local CLI usage:
+- Prefer ripgrep and fd over legacy tools:
+  - grep -> rg
+  - find -> rg --files / fd
+  - ls -R -> rg --files
+  - cat file | grep pattern -> rg pattern file
+- Cap file reads at 250 lines; use: rg -n -A 3 -B 3 for context
+- Use jq for JSON parsing instead of regex
+EOF
