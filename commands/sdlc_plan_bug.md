@@ -1,8 +1,12 @@
 # SDLC Plan Bug $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify APIs.
+
 ## Purpose
-Specialized bug fix planning that converts confirmed analysis into a precise, low-risk fix plan
-with risk mitigation and rollback strategies. This command does not implement or test the fix.
+Specialized bug fix planning that converts confirmed analysis into a concise, low-risk fix plan. Clarification‑First: confirm assumptions, scope, and acceptance criteria. Focus on backward compatibility and rollback. Use Context7 for framework/library best practices. This command does not implement or test the fix.
 
 ## Command Usage
 ```bash
@@ -20,12 +24,13 @@ sdlc_plan_bug --name data-corruption-bug
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Bug fix workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <critical|high|medium|low>`: Bug severity (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus planning (optional)
+ - `--name <descriptive-name>`: Bug fix workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <critical|high|medium|low>`: Bug severity (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus planning (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -34,6 +39,9 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - rollback plan ready"`
 - `git commit -m "sdlc: <name> - bug fix planning complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
+
+### Outputs
+- `task_<name>/debug/plan/plan.md` (optional for small bugs if plan is trivial)
 
 ## 🔹 PLAN
 ### 1. Inputs and confirmation
@@ -69,7 +77,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
 │   ├── fix-strategy.md      # Chosen approach and rationale with Context7 references
 │   ├── risk-assessment.md   # Risks and mitigations using framework-specific patterns

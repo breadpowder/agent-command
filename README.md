@@ -49,21 +49,21 @@ To use these commands with AI agents (Claude, Codex, etc.), sync them to your lo
 ## 🎯 Refactored Command Structure
 
 ### **Feature Development Commands:**
-- **`sdlc_understand_requirement`**: Initial requirement understanding and clarification from raw user input
-- **`sdlc_prd_feature`**: Product Requirements Document creation for new features
-- **`sdlc_plan_feature`**: Feature architecture and design planning
-- **`sdlc_implement_feature`**: Feature implementation and integration
+- `sdlc_understand_requirement`: Requirement understanding and clarification from raw user input
+- `sdlc_prd_feature`: Product requirements from the user perspective (benefits, usage, value)
+- `sdlc_plan_feature`: Technical plan from the implementation perspective (feasibility, trade-offs, decisions)
+- `sdlc_implement_feature`: Feature implementation (Context7 for coding references)
 
 ### **Bug Fix Commands:**
-- **`sdlc_analyze_bug`**: Bug analysis and root cause investigation
-- **`sdlc_reproduce_bug`**: Bug reproduction steps and environment setup
-- **`sdlc_plan_bug`**: Bug fix planning and strategy development
-- **`sdlc_implement_bug`**: Surgical bug fix implementation
+- `sdlc_analyze_bug`: Root-cause analysis (Context7 allowed; optional for small)
+- `sdlc_reproduce_bug`: Reproduction steps and environment notes
+- `sdlc_plan_bug`: Minimal fix plan (optional for small)
+- `sdlc_implement_bug`: Targeted fix (Context7 for coding references)
 
 ### **Shared Commands:**
-- **`sdlc_setup_testing`**: Testing infrastructure and test execution (features & bugs)
-- **`sdlc_deploy_changes`**: Deployment and release management (features & bugs)
-- **`sdlc_development_workflow`**: Master orchestrator for complete workflows
+- `sdlc_test`: Test execution and regression checks (Context7 for framework patterns)
+- `sdlc_deploy`: Deployment and release/hotfix execution
+- `sdlc_workflow`: Orchestrator for complete workflows with complexity-aware steps
 
 ## 📋 Complete Workflows
 
@@ -76,16 +76,16 @@ sdlc_understand_requirement --name user-authentication --source github --prompt 
 sdlc_prd_feature --name user-authentication --source github --type backend --id 123
 
 # Step 3: Plan feature architecture and design
-sdlc_plan_feature --name user-authentication --source github --type backend --id 123
+sdlc_plan_feature --name user-authentication --source github --type backend --id 123 --complexity medium
 
 # Step 4: Implement the feature
 sdlc_implement_feature --name user-authentication --source github --type backend --id 123
 
 # Step 5: Setup comprehensive testing
-sdlc_setup_testing --name user-authentication --type feature
+sdlc_test --name user-authentication --type feature
 
 # Step 6: Deploy the feature
-sdlc_deploy_changes --name user-authentication --type release
+sdlc_deploy --name user-authentication --type release
 ```
 
 ### **Bug Fix Lifecycle:**
@@ -103,19 +103,19 @@ sdlc_plan_bug --name payment-failure --source github --type critical --id 456
 sdlc_implement_bug --name payment-failure --source github --type hotfix --id 456
 
 # Step 5: Test fix and prevent regression
-sdlc_setup_testing --name payment-failure --type regression
+sdlc_test --name payment-failure --type regression
 
 # Step 6: Deploy the fix
-sdlc_deploy_changes --name payment-failure --type hotfix
+sdlc_deploy --name payment-failure --type hotfix
 ```
 
 ### **Orchestrated Workflows:**
 ```bash
-# Feature development with guided workflow
-sdlc_development_workflow --name user-dashboard --source github --type feature --id 789
+# Feature development with guided workflow (complexity-aware)
+sdlc_workflow --name user-dashboard --source github --type feature --id 789 --complexity small
 
 # Bug fix with guided workflow
-sdlc_development_workflow --name critical-bug --source github --type bug --id 101
+sdlc_workflow --name critical-bug --source github --type bug --id 101 --complexity small
 ```
 
 ## 🔧 Universal Parameters
@@ -147,34 +147,54 @@ All SDLC commands use standardized parameters:
 
 ## 🏗️ Workspace Organization
 
-Each command creates a standardized workspace structure:
+Minimal, one-file-per-leaf, shared for features and bugs:
 
 ```
-<project_root>/<name>/
-├── plan/                  # Planning documents and strategies
-│   ├── main-plan.md       # Primary plan and approach
-│   ├── task-breakdown.md  # Detailed task breakdown (2-hour rule)
-│   ├── decision-log.md    # Options, pros/cons, selected decisions with rationale
-│   ├── architecture.md    # High-level diagrams and contracts (features)
-│   └── implementation.md  # Step-by-step implementation strategy (if planning impl)
-├── issue/                 # Issue analysis and requirements
-│   ├── analysis.md        # Problem/requirement analysis
-│   ├── research.md        # Background research and prior art
-│   └── requirements.md    # Specific requirements and acceptance criteria
-└── context/               # Additional context and references
-    ├── source-reference.md # Original source context and links
-    └── dependencies.md     # Dependencies and relationships
+<project_root>/task_<name>/
+├── requirement/
+│   ├── analysis/requirement_analysis.md
+│   ├── user-stories/stories.md                  # optional (features)
+│   ├── requirements/requirements.md            # optional (medium/large)
+│   └── handoff/handoff_requirements.md         # optional (medium/large)
+├── specs/
+│   ├── feature-spec.md                          # PRD: user perspective
+│   ├── user-stories.md                          # user stories + acceptance criteria
+│   ├── business-case.md                         # business value and success metrics
+│   ├── api-contract.yaml                        # OpenAPI (if applicable)
+│   ├── acceptance-tests.json                    # structured acceptance criteria
+│   ├── observability.yaml                       # SLOs, alerts, dashboards
+│   └── rollout-config.yaml                      # feature flags and rollout
+├── plan/
+│   ├── tasks/tasks.md
+│   └── strategy/strategy.md                    # optional (medium/large)
+├── design/
+│   └── architecture/architecture.md            # optional (medium/large)
+├── implementation/
+│   └── changes/changes.md
+├── debug/
+│   ├── repro/repro.md
+│   ├── analysis/rca.md                         # optional
+│   └── plan/plan.md                            # optional
+├── test/
+│   ├── plan/plan.md                            # optional
+│   └── results/results.md
+└── deploy/
+    ├── release/release.md                      # feature
+    └── hotfix/hotfix.md                        # bug
 ```
+
+Small complexity defaults to the essential leaves only.
 
 ### **Feature-Specific Additions:**
-- **PRD Documentation**: Complete product requirements and user stories
+- **PRD (user perspective)**: `task_<name>/specs/*`
+- **Plan (technical perspective)**: `task_<name>/plan/*` for task breakdown and decisions
 - **Architecture Design**: Technical architecture and system integration plans
 - **Business Case**: ROI analysis and success metrics
 
 ### **Bug-Specific Additions:**
-- **Root Cause Analysis**: Deep technical investigation and diagnosis
-- **Reproduction Procedures**: Systematic reproduction steps and test cases
-- **Fix Strategy**: Surgical fix plans with risk assessment
+- Root cause summary (lightweight)
+- Reproduction procedures and test cases
+- Minimal fix plan when needed
 
 ## 🔒 Git Integration & Traceability
 
@@ -216,6 +236,22 @@ git revert <commit_hash>
 - Safe rollback capabilities with full history
 - Clear audit trail for debugging and compliance
 - Checkpoint recovery for interrupted workflows
+
+### Clarification‑First Policy (applies to all commands)
+- Reflect the user’s intent in your own words before acting.
+- Ask bundled clarifying questions for any ambiguities or assumptions.
+- Wait for confirmation before coding.
+- Record assumptions as “unconfirmed” until resolved.
+
+Context7 usage: For coding tasks (plan, implement, analyze, test), use Context7 library resolution and docs retrieval to reduce hallucinations and validate APIs/configs. PRD uses Context7 only when verifying third‑party terms or external constraints.
+
+### Complexity selection
+- Use `--complexity <small|medium|large>` to control how many phases/artifacts are produced.
+- If omitted, the orchestrator auto-detects complexity from input size, impacted areas, and risk keywords:
+  - small: single module, no API/schema change, low risk
+  - medium: multiple modules or light API/config change
+  - large: cross-cutting, schema/public API changes, or critical risk
+  The proposed complexity is shown for confirmation and can be overridden.
 
 ## 🚀 Multi-Source Support
 
@@ -310,8 +346,8 @@ sdlc_plan_feature --name mobile-checkout \
   --context docs/user-flows.md \
   --prompt "Prioritize MVP scope with clear guardrails"
 sdlc_implement_feature --name mobile-checkout
-sdlc_setup_testing --name mobile-checkout --type feature
-sdlc_deploy_changes --name mobile-checkout --type release
+sdlc_test --name mobile-checkout --type feature
+sdlc_deploy --name mobile-checkout --type release
 ```
 
 ### **Step-by-Step Bug Fix**
@@ -322,8 +358,8 @@ sdlc_analyze_bug --name api-crash --prompt "Focus on concurrency edge cases"
 sdlc_plan_bug --name api-crash --type high \
   --prompt "Minimize blast radius with a feature flag"
 sdlc_implement_bug --name api-crash
-sdlc_setup_testing --name api-crash --type regression
-sdlc_deploy_changes --name api-crash --type hotfix
+sdlc_test --name api-crash --type regression
+sdlc_deploy --name api-crash --type hotfix
 ```
 
 ## 🔧 Troubleshooting

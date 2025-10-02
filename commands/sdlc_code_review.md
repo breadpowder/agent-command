@@ -1,7 +1,13 @@
 # SDLC Code Review $ARGUMENTS
 
+## Context first
+-- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
-Comprehensive code review workflow for development lifecycle that supports multiple sources (GitHub, Bitbucket, local commits, feature branches) with systematic analysis and structured testing validation.
+Comprehensive code review workflow for development lifecycle that supports multiple sources (GitHub, Bitbucket, local commits, feature branches) with systematic analysis and structured testing validation. Clarification‑First: reflect review goals, bundle questions about scope/constraints, wait for confirmation, and record assumptions as “unconfirmed”.
 
 ## Command Usage
 ```bash
@@ -21,13 +27,18 @@ sdlc_code_review --source file --scope "src/agents/" --name agent-module-review
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
+- `--name <descriptive-name>`: Workspace name (creates <project_root>/task_<name>/)
 - `--source <github|local|bitbucket|file>`: Input source (defaults to local)
 - `--scope <files|modules|component>`: Focus area when reviewing local sources
 - `--type <issue|pr|feature|bug|etc>`: Specific review context when needed
 - `--id <identifier>`: External ID (issue#, PR#, etc) or file/commit identifiers
 - `--context <file|dir>`: Extra documentation or logs to preload into the workspace
 - `--prompt "<instruction>"`: Inline guidance to clarify review goals
+- `--complexity <small|medium|large>`: Controls depth of artifacts; if omitted, auto-detected
+
+### Outputs
+- Minimal (small): `task_<name>/issue/analysis.md` with findings and recommendations
+- Optional (medium/large): additional artifacts per “Structured Workspace Creation” below
 
 **Automatic Git Commits:**
 This command checkpoints review artifacts for traceability:
@@ -58,7 +69,7 @@ This command checkpoints review artifacts for traceability:
 
 **Structured Workspace Creation:**
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
 │   ├── main-plan.md           # Primary review strategy and approach
 │   ├── task-breakdown.md      # Detailed task breakdown (2-hour rule)

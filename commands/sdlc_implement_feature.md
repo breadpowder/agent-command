@@ -1,9 +1,13 @@
 # SDLC Implement Feature $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task. 
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
-Specialized feature implementation that turns an approved plan into code. This command focuses on
-writing code and related configuration only; testing and deployment are handled by separate
-commands.
+Specialized feature implementation that turns a plan into code. Clarification‑First: reflect user intent, bundle clarifying questions, wait for confirmation, and record assumptions as “unconfirmed”. Focus on backward compatibility. Use Context7 to validate APIs/configs during coding.
 
 ## Command Usage
 ```bash
@@ -21,12 +25,13 @@ sdlc_implement_feature --name payment-system
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
+- `--name <descriptive-name>`: Workspace name (creates <project_root>/task_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <backend|frontend|fullstack>`: Implementation type (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
 - `--context <file|dir>`: Additional context file(s) or directory (optional)
 - `--prompt "<instruction>"`: Inline task prompt to focus implementation (optional)
+ - `--complexity <small|medium|large>`: Controls optional depth; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -35,6 +40,9 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - configuration and docs updated"`
 - `git commit -m "sdlc: <name> - feature implementation complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
+
+### Outputs
+- `task_<name>/implementation/changes/changes.md`
 
 ## 🔹 PLAN
 ### 1. Scope confirmation
@@ -49,7 +57,7 @@ This command creates commits at key checkpoints for traceability:
   pros/cons and impact on complexity, performance, and compatibility, validated against current Context7 documentation.
 - **Topic-Specific Documentation Retrieval**: Use `mcp_context7_get-library-docs` with specific topics (e.g., 'authentication', 'routing', 'database') as implementation needs arise.
 - **Pseudocode Refinement**: Update and refine pseudocode based on latest documentation patterns and best practices.
-- Decision gate: record selected options in `<name>/plan/decision-log.md` with Context7 documentation references before coding.
+- Decision gate (if needed): briefly record selected options with Context7 references.
 
 ### 3. Task breakdown (2-hour rule)
 - Sequence tasks for incremental value; keep tasks ≤2h with clear validation criteria.

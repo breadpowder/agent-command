@@ -1,9 +1,15 @@
 # SDLC Reproduce Bug $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify APIs.
+
 ## Purpose
 Specialized bug reproduction to create reliable, minimal steps and artifacts that consistently
-trigger the issue. This command establishes controlled environments and documents procedures; it
-does not implement fixes.
+trigger the issue. Clarification‑First: confirm assumptions about environment and steps with the
+user. This command establishes controlled environments and documents procedures; it does not
+implement fixes.
 
 ## Command Usage
 ```bash
@@ -21,12 +27,13 @@ sdlc_reproduce_bug --name data-corruption-bug
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Bug workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <production|staging|development>`: Environment type (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus reproduction (optional)
+ - `--name <descriptive-name>`: Bug workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <production|staging|development>`: Environment type (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus reproduction (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -60,7 +67,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
 │   ├── reproduction-plan.md  # Step-by-step reproduction strategy
 │   ├── test-cases.md         # Automated/manual test cases
@@ -82,3 +89,5 @@ This command creates commits at key checkpoints for traceability:
 - Reproduction steps with evidence and reliability notes.
 - Automated scripts/tests and reset utilities.
 - Artifacts ready for `sdlc_analyze_bug` and `sdlc_plan_bug`.
+### Outputs
+- `task_<name>/debug/repro/repro.md`

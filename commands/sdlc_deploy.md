@@ -1,8 +1,13 @@
 # SDLC Deploy $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
-Specialized deployment workflow that executes safe, reliable, rollback-ready releases. This command
-prepares, executes, and validates deployments; it does not implement features or author tests.
+Specialized deployment workflow that executes safe, reliable, rollback-ready releases. Clarification‑First: confirm scope, environment, and assumptions before acting. Focus on backward compatibility and safe backout. This command prepares, executes, and validates deployments; it does not implement features or author tests.
 
 ## Command Usage
 ```bash
@@ -21,12 +26,13 @@ sdlc_deploy --name production-release
 
 **Simplified Parameters:**
 Files are created ONLY if applicable, e.g. feature new features or simple feature, there is no rollbacl-plan.md and rollout-config.yaml, obervability.yaml nor runbook.yaml.
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
+- `--name <descriptive-name>`: Workspace name (creates <project_root>/task_<name>/)
 - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
 - `--type <production|staging|hotfix>`: Deployment type (optional, auto-detected)
 - `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
 - `--context <file|dir>`: Additional context file(s) or directory (optional)
 - `--prompt "<instruction>"`: Inline task prompt to focus deployment (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -35,6 +41,10 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - deployment executed successfully"`
 - `git commit -m "sdlc: <name> - post-deployment validation complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
+
+### Outputs
+- Feature: `task_<name>/deploy/release/release.md`
+- Bug: `task_<name>/deploy/hotfix/hotfix.md`
 
 ## 🔹 PLAN
 - ### 1. Context and readiness
@@ -59,7 +69,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
 │   ├── deployment-plan.md   # Steps, roles, runbook with observability
 │   ├── decision-log.md      # Strategy and rationale
@@ -89,6 +99,8 @@ This command creates commits at key checkpoints for traceability:
 - Confirm strategy selection and rollback plan.
 - Announce deployment window and owners; align with stakeholders.
 - Review results and decide on promotion/rollback/post-actions together.
+
+Clarification‑First: Before executing, bundle questions about environments, maintenance windows, and rollback expectations; wait for confirmation.
 
 ### 5. Comprehensive Deployment Requirements
 

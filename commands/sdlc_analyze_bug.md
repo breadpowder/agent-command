@@ -1,9 +1,12 @@
 # SDLC Analyze Bug $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify APIs.
+
 ## Purpose
-Specialized bug analysis focused on understanding symptoms, isolating the root cause, and
-assessing impact. This command does not implement fixes; it produces actionable analysis and
-solution options for planning.
+Specialized bug analysis focused on understanding symptoms and isolating the root cause. Clarification‑First: confirm reproduction and assumptions before deep analysis. Keep it lean; use Context7 docs as needed for framework/library behavior. This command does not implement fixes; it produces actionable analysis for planning.
 
 ## Command Usage
 ```bash
@@ -21,12 +24,13 @@ sdlc_analyze_bug --name data-corruption-bug
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Bug workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <production|staging|development>`: Environment type (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus analysis (optional)
+ - `--name <descriptive-name>`: Bug workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <production|staging|development>`: Environment type (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus analysis (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -36,6 +40,9 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - impact assessment complete"`
 - `git commit -m "sdlc: <name> - bug analysis complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
+
+### Outputs
+- `task_<name>/debug/analysis/rca.md` (optional for small bugs when root cause is obvious)
 
 ## 🔹 PLAN
 - ### 1. Context gathering and triage
@@ -67,7 +74,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
 │   ├── experiments.md      # Hypotheses and experiments
 │   └── decision-log.md     # Options and selected decision for planning

@@ -1,5 +1,11 @@
 # Release and Publish Command $ARGUMENTS.
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
 Comprehensive release and publication workflow for development lifecycle that automates version management, testing, building, and deployment to package repositories with validation and monitoring.
 

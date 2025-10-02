@@ -1,7 +1,16 @@
 # SDLC PRD Feature $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/requirement stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
-Product Requirements Document (PRD) creation workflow for new features. This command facilitates comprehensive requirements gathering, user story development, and business case documentation to establish clear feature specifications before development begins.
+Product Requirements Document (PRD) focused on the user perspective: how users will use the
+feature and the benefits they gain. Clarification‑First: reflect intent, bundle questions, wait for
+confirmation, and record assumptions as “unconfirmed.” For small features, this command is optional;
+prefer concise requirements focused on user value.
 
 ## Command Usage
 ```bash
@@ -19,12 +28,13 @@ sdlc_prd_feature --name recommendation-engine
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Feature workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <frontend|backend|fullstack|mobile>`: Feature type (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, epic#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus PRD scope (optional)
+ - `--name <descriptive-name>`: Feature workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <frontend|backend|fullstack|mobile>`: Feature type (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, epic#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus PRD scope (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected (recommended for medium/large)
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -53,35 +63,32 @@ This command creates commits at key checkpoints for traceability:
 - **Technical Assessment**: Platform capabilities, integration requirements, constraints, and risks
 - **Business Case Analysis**: ROI calculations, success metrics, risk assessment
 
-### 2. Context Storage (Feature-Focused Structure)
-Store all PRD analysis and documentation in standardized directory structure:
-Files are created or exists ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
+### 2. Context storage (user-focused outputs)
+Store all PRD artifacts under the single `specs/` folder within the task workspace. Create files
+ONLY if applicable (e.g., for non-API features, skip `api-contract.yaml`).
 ```
-<project_root>/feature_<name>/
-├── plan/
-│   ├── feature-spec.md         # Single source of truth: PRD + Requirements merged
+<project_root>/task_<name>/
+├── specs/
+│   ├── feature-spec.md         # PRD: user requirements and value
 │   ├── user-stories.md         # Detailed user stories and acceptance criteria
-│   └── business-case.md        # Business justification and success metrics
-├── specs/                      # Machine-readable specifications
-│   ├── api-contract.yaml       # OpenAPI spec with examples and error shapes (if it is applicable)
+│   ├── business-case.md        # Business justification and success metrics
+│   ├── api-contract.yaml       # OpenAPI spec (if applicable)
 │   ├── acceptance-tests.json   # Structured acceptance criteria
-│   ├── observability.yaml     # Metrics, alerts, dashboards, SLOs
+│   ├── observability.yaml      # Metrics, alerts, dashboards, SLOs
 │   └── rollout-config.yaml     # Feature flags, gating checks, backout steps
-├── issue/
-│   └── requirements.md         # Complete requirements including constraints and risks
 └── context/
     └── source-reference.md     # Original source context and links
 ```
 
-**IMPORTANT**: All PRD documentation must be created under `<project_root>/feature_<name>/` structure where `<name>` is the feature workspace name provided via `--name` parameter.
+**IMPORTANT**: PRD artifacts must be written to `<project_root>/task_<name>/specs/`.
 
-**Streamlined Structure**: 
-- Single source of truth: `feature-spec.md` merges PRD + Requirements
-- Machine-readable specs in `specs/` directory for unambiguous tooling
+**Streamlined structure**
+- Single source of truth: `specs/feature-spec.md` merges PRD + user requirements
+- All PRD artifacts live in `specs/` for predictable location
 - Standardized headers across all documents for predictable context location
 
-**Feature Specification Document Structure:**
-The `plan/feature-spec.md` file should include:
+**Feature specification document structure**
+The `prd/feature-spec.md` file should include:
 - **Problem Statement**: Unambiguous problem and goals
 - **In/Out of Scope**: Clear boundaries and constraints
 - **User Stories**: Primary scenarios with acceptance criteria
@@ -191,6 +198,12 @@ The `plan/feature-spec.md` file should include:
 - Schema validation on PR for all machine-readable specs
 - API contract diff check with compatibility rules enforcement
 - Acceptance tests must pass and map to F-### IDs for traceability
+
+## Outputs
+- `task_<name>/specs/feature-spec.md`
+- `task_<name>/specs/user-stories.md`
+- `task_<name>/specs/business-case.md`
+- Optional: `task_<name>/specs/*` (api-contract.yaml, acceptance-tests.json, etc.)
 - Performance smoke tests with budget thresholds enforced
 - Security checks: dependency scan, secrets scan, container hardening
 - Observability existence check: required metrics/alerts present

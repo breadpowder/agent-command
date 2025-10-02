@@ -1,5 +1,11 @@
 # Refactor Command $ARGUMENTS.
 
+## Context first
+- - Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
 Systematic code refactoring workflow for development lifecycle that handles codebase improvements, architectural changes, and technical debt reduction with comprehensive analysis and validation.
 

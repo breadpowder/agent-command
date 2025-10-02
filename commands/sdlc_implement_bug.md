@@ -1,9 +1,12 @@
 # SDLC Implement Bug $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify APIs.
+
 ## Purpose
-Specialized bug fix implementation that executes the approved plan safely and minimally. This
-command focuses on code changes and configuration; testing and deployment are handled by separate
-commands. Follows development standards from USER_LEVEL_CLAUDE.md for testing, logging, security, and code quality.
+Specialized bug fix implementation that executes the approved plan safely and minimally. Clarification‑First: confirm scope and assumptions before code. Use Context7 to validate APIs/configs as you change code. Testing and deployment are handled by separate commands. Follow USER_LEVEL_CLAUDE.md standards for testing, logging, security, and code quality.
 
 ## Command Usage
 ```bash
@@ -21,12 +24,13 @@ sdlc_implement_bug --name data-corruption-bug
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Bug fix workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <hotfix|patch|critical>`: Fix type (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus implementation (optional)
+ - `--name <descriptive-name>`: Bug fix workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <hotfix|patch|critical>`: Fix type (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, ticket#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus implementation (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -35,6 +39,9 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - logging/guardrails updated"`
 - `git commit -m "sdlc: <name> - bug fix implementation complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
+
+### Outputs
+- `task_<name>/debug/fix/fix.md`
 
 ## 🔹 PLAN
 ### 1. Scope and safety confirmation

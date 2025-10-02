@@ -1,9 +1,17 @@
 # SDLC Plan Feature $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify third-party
+  APIs.
+
 ## Purpose
-Specialized feature planning that performs requirements analysis, technical feasibility, option
-evaluation, and task breakdown. This command produces a clear, agreed plan without writing code
-or running tests.
+Translate user requirements into a technical plan focused on implementation feasibility, trade-offs,
+and decisions. Produce a clear, scoped task breakdown with acceptance criteria and explicit
+technology choices. Avoid heavy architecture unless complexity demands it.
+
+Clarification‑First: reflect user intent, bundle clarifying questions, wait for confirmation, and record assumptions as “unconfirmed” before proceeding.
 
 ## Command Usage
 ```bash
@@ -21,12 +29,13 @@ sdlc_plan_feature --name mobile-app
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <frontend|backend|fullstack>`: Feature type (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus planning (optional)
+ - `--name <descriptive-name>`: Workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <frontend|backend|fullstack>`: Feature type (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus planning (optional)
+ - `--complexity <small|medium|large>`: Controls optional artifacts; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -38,6 +47,10 @@ This command creates commits at key checkpoints for traceability:
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
 
 ## 🔹 PLAN
+### Outputs
+- `task_<name>/plan/tasks/tasks.md`
+- Optional (medium/large): `task_<name>/plan/strategy/strategy.md`
+
 ### 1. Context gathering and analysis
 - Requirement analysis: parse stories, acceptance criteria, constraints, assumptions, plus any
   provided `--context` materials and `--prompt` intent.
@@ -47,8 +60,8 @@ This command creates commits at key checkpoints for traceability:
 - Technical feasibility: identify complexity hot-spots and integration points with documentation-informed analysis.
 - Business impact: value, scope boundaries, out-of-scope items.
 
-### 2. Options analysis and decision
-- **Documentation-Informed Architecture**: Use Context7 documentation to evaluate 2–3 viable approaches with current best practices, pros/cons, and risks.
+### 2. Options analysis and decision (Optional for medium+ complexity)
+- **Documentation-Informed Architecture**: Use Context7 mcp and documentation to evaluate 2–3 viable approaches with current best practices, pros/cons, and risks.
 - **Technology choices**: Alternatives with trade-offs and constraints, validated against latest documentation and compatibility matrices.
 - **Data model options**: Implications for migrations and compatibility, informed by current framework documentation.
 - **Pseudocode Architecture Generation**: Create high-level pseudocode showing:
@@ -72,26 +85,14 @@ This command creates commits at key checkpoints for traceability:
 - **Risk-Ordered Implementation**: Order for incremental value and early risk reduction based on documentation complexity analysis.
 
 ### 4. Planning artifacts and structure
-Store planning in a standardized structure:
-Files are created ONLY if applicable, e.g. feature new features or simple feature or non-api task, there might be no api-contract. observability.yaml,rollout-config.yaml.
+Store planning in a standarized structure
+Minimal, one-file-per-leaf (create optional files only when complexity warrants it):
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
-│   ├── implementation-plan.md  # Strategy, scope, milestones (separate from PRD)
-│   ├── task-breakdown.md       # 2-hour tasks with acceptance criteria and pseudocode
-│   ├── decision-log.md         # Options, pros/cons, chosen decisions with Context7 references
-│   ├── architecture.md         # High-level diagrams and contracts with pseudocode examples
-│   └── pseudocode-examples.md  # Detailed pseudocode for each major component and task
-├── specs/                      # Machine-readable specifications  
-│   ├── api-contract.yaml       # OpenAPI spec with examples and error shapes
-│   ├── config-schema.yaml      # Configuration schema with defaults and validation
-│   ├── observability.yaml     # Metrics, alerts, dashboards, SLOs
-│   └── rollout-config.yaml     # Feature flags, gating checks, backout steps
-├── issue/
-│   ├── requirements.md         # Functional and non-functional requirements
-│   └── risks.md                # Risks, mitigations, open questions
-└── context/
-    └── source-reference.md     # Links, tickets, prior art
+│   ├── tasks/tasks.md
+|   |-- decision-log.md         # Options, pros/cons, with external reference   
+│   └── strategy/strategy.md    # optional
 ```
 
 ## Collaboration checkpoints
@@ -103,11 +104,10 @@ Files are created ONLY if applicable, e.g. feature new features or simple featur
 
 **Definition of Ready - Before Implementation:**
 - Requirements analysis complete with clear boundaries and constraints
-- **Context7 Documentation Integration**: All identified libraries/frameworks resolved and current documentation retrieved
-- Architecture options evaluated with 2-3 viable approaches documented with Context7-informed best practices
-- Technology choices justified with trade-offs and constraints analysis using latest documentation
-- Data model implications assessed for migrations and compatibility with framework-specific patterns
-- **Comprehensive Pseudocode Generation**: Task breakdown complete with ≤2h tasks, validation criteria, and detailed pseudocode examples
+- **Context7 mcp Documentation Integration**: Resolve libraries/frameworks and fetch current docs for coding tasks
+- Architecture options documented only if complexity demands it
+- Technology choices justified briefly with latest documentation references (if applicable)
+- Task breakdown complete with ≤2h tasks and validation criteria
 - Dependencies mapped with explicit ordering and risk assessment using documentation-informed integration patterns
 - Machine-readable specs created (API contracts, config schemas) validated against current standards
 - Observability plan defined with metrics, alerts, and SLO targets following framework best practices
@@ -121,7 +121,5 @@ Files are created ONLY if applicable, e.g. feature new features or simple featur
 - Each task must reference specific requirements and acceptance criteria
 
 ## Outputs
-- Updated planning workspace as above with machine-readable specs
-- Recorded decisions with rationale and impact assessment
-- Finalized task breakdown ready for implementation handoff
-- Quality gates and CI automation guidance established
+- `task_<name>/plan/tasks/tasks.md`
+- Optional: `task_<name>/plan/strategy/strategy.md`

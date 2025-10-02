@@ -1,8 +1,15 @@
 # SDLC Test $ARGUMENTS
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 references are optional; use them only when you need to refer to or verify APIs.
+
 ## Purpose
 Specialized testing setup and execution that establishes frameworks, writes tests, and validates
-quality gates for a change. This command does not implement features or deploy to production.
+quality gates for a change. Clarification‑First: confirm scope and assumptions before testing.
+Use Context7 to validate framework/library usage and patterns. This command does not implement
+features or deploy to production.
 
 ## Command Usage
 ```bash
@@ -20,12 +27,13 @@ sdlc_test --name comprehensive-testing
 ```
 
 **Simplified Parameters:**
-- `--name <descriptive-name>`: Workspace name (creates <project_root>/feature_<name>/)
-- `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
-- `--type <unit|integration|e2e|performance>`: Testing type (optional, auto-detected)
-- `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
-- `--context <file|dir>`: Additional context file(s) or directory (optional)
-- `--prompt "<instruction>"`: Inline task prompt to focus testing (optional)
+ - `--name <descriptive-name>`: Workspace name (creates <project_root>/task_<name>/)
+ - `--source <github|local|bitbucket>`: Input source (optional, defaults to local)
+ - `--type <unit|integration|e2e|performance>`: Testing type (optional, auto-detected)
+ - `--id <identifier>`: External ID (issue#, PR#, etc) (optional)
+ - `--context <file|dir>`: Additional context file(s) or directory (optional)
+ - `--prompt "<instruction>"`: Inline task prompt to focus testing (optional)
+ - `--complexity <small|medium|large>`: Optional; if omitted, auto-detected
 
 **Automatic Git Commits:**
 This command creates commits at key checkpoints for traceability:
@@ -70,7 +78,7 @@ This command creates commits at key checkpoints for traceability:
 
 ### Workspace structure
 ```
-<project_root>/feature_<name>/
+<project_root>/task_<name>/
 ├── plan/
 │   ├── decision-log.md     # Tooling and strategy decisions
 │   └── test-strategy.md    # Comprehensive test strategy with coverage goals
@@ -117,3 +125,6 @@ This command creates commits at key checkpoints for traceability:
 - CI-integrated execution with automated quality gates and reporting
 - Traceability matrix linking tests to requirements and acceptance criteria
 - Coverage and performance reports meeting quality thresholds
+### Outputs
+- `task_<name>/test/results/results.md`
+- Optional: `task_<name>/test/plan/plan.md`

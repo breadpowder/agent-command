@@ -1,11 +1,16 @@
 # USER_LEVEL_CLAUDE.md - Python Development Standards
 
+## Context first
+- Gather relevant context from the existing
+  task_<name>/ stucture before planning or executing any task.
+- Context7 mcp references are recommended; use them only when you need to refer to or verify APIs.
+
 IMPORTANT:
 1. Before you make any change, create and checkout a feature branch named feature/<feature_name> or bugfix/<issue_name> which is short and descriptive name and Make and then commit your changes in this branch.
 2. You must write automated tests for all code.
 3. You must compile the code and pass ALL tests before committing.
-4. **WORKFLOW CONTEXT EXCLUSION**: NEVER commit markdown files under `<project_root>/feature_<name>/` directories (e.g., `feature_emr-dns-migration/`, `feature_auth/`, etc.) as these are local workflow context files
-5. **GITIGNORE MANAGEMENT**: Automatically update `.gitignore` to exclude workflow directories by adding pattern `feature_*/` to ignore all feature workspace directories
+4. **WORKFLOW CONTEXT EXCLUSION**: NEVER commit markdown files under `<project_root>/task_<name>/` directories (e.g., `task_auth/`, `task_bug-123/`) as these are local workflow context files
+5. **GITIGNORE MANAGEMENT**: Automatically update `.gitignore` to exclude workflow directories by adding pattern `task_*/` to ignore all task workspaces
 
 ---
 
@@ -25,32 +30,49 @@ The development workflow now integrates Context7 MCP for enhanced documentation-
 - **Topic-Specific Guidance**: Focused documentation retrieval for specific implementation topics (e.g., 'authentication', 'routing', 'database', 'testing')
 - **Pseudocode Generation**: Structured code examples and architectural patterns in planning phases to aid understanding and implementation
 
-### Workspace Structure
-SDLC commands create feature/issue-specific workspaces with consistent `feature_` prefix and Context7 MCP integration:
+### Clarification‑First Policy (Minimize back-and-forth)
+- Reflect: Restate the user’s intent in your own words before acting.
+- Ask: Bundle clarifying questions for any ambiguities or assumptions.
+- Confirm: Wait for confirmation before coding or making changes.
+- Record: Capture assumptions as “unconfirmed” until resolved.
+
+This policy applies to all SDLC commands and workflows.
+
+### Task Structure
+SDLC commands create and maintans feature or issue-specific workspaces with consistent `task_` prefix 
 
 ```
-<project_root>/feature_<name>/
-├── plan/                          # Planning documents and strategies
-│   ├── implementation-plan.md     # Primary plan and approach (strategy, scope, milestones)
-│   ├── task-breakdown.md          # Detailed task breakdown (2-hour rule) with pseudocode examples
-│   ├── decision-log.md            # Options, pros/cons, decisions with Context7 documentation references
-│   ├── architecture.md            # High-level diagrams and contracts with pseudocode examples
-│   └── pseudocode-examples.md     # Detailed pseudocode for each major component and task
-├── specs/                         # Machine-readable specifications
-│   ├── api-contract.yaml          # OpenAPI spec with examples and error shapes
-│   ├── config-schema.yaml         # Configuration schema with defaults and validation
-│   ├── observability.yaml         # Metrics, alerts, dashboards, SLOs
-│   └── rollout-config.yaml        # Feature flags, gating checks, backout steps
-├── issue/                         # Issue analysis and requirements
-│   ├── analysis.md                # Problem/requirement analysis with Context7 validation
-│   ├── requirements.md            # Specific requirements and acceptance criteria
-│   ├── risks.md                   # Risks, mitigations, open questions
-│   └── context7-validation.md     # Documentation compliance and best practices analysis
-├── context/                       # Additional context and references
-│   ├── source-reference.md        # Original source context and links
-│   └── dependencies.md            # Dependencies and relationships with framework compatibility
-└── reflection/
-    └── reflection.md              # Post-implementation analysis
+<project_root>/task_<name>/
+├── specs/
+│   ├── feature-spec.md                      # PRD (user perspective)
+│   ├── user-stories.md                      # user stories + acceptance criteria
+│   ├── business-case.md                     # business value and success metrics
+│   ├── api-contract.yaml                    # OpenAPI (if applicable)
+│   ├── acceptance-tests.json                # structured acceptance criteria
+│   ├── observability.yaml                   # SLOs, alerts, dashboards
+│   └── rollout-config.yaml                  # feature flags and rollout
+├── requirement/
+│   ├── analysis/requirement_analysis.md
+│   ├── user-stories/stories.md                  # optional (features)
+│   ├── requirements/requirements.md            # optional (medium/large)
+│   └── handoff/handoff_requirements.md         # optional (medium/large)
+├── plan/
+│   ├── tasks/tasks.md
+│   └── strategy/strategy.md                    # optional (medium/large)
+├── design/
+│   └── architecture/architecture.md            # optional (medium/large)
+├── implementation/
+│   └── changes/changes.md
+├── debug/
+│   ├── repro/repro.md
+│   ├── analysis/rca.md                         # optional
+│   └── plan/plan.md                            # optional
+├── test/
+│   ├── plan/plan.md                            # optional
+│   └── results/results.md
+└── deploy/
+    ├── release/release.md                      # feature
+    └── hotfix/hotfix.md                        # bug
 ```
 
 Each feature/issue workspace must include:
@@ -60,20 +82,21 @@ Each feature/issue workspace must include:
 * Follow-ups or rollback procedures
 
 **Examples**:
-- `feature_user-authentication/plan/main-plan.md`
+- `task_user-authentication/specs/feature-spec.md`
+- `task_user-authentication/plan/tasks/tasks.md`
 - `feature_ops-cli-resolution/issue/analysis.md` capturing adjustments like `PYTHONPATH=src` and `OPS_DEBUG`
 
 You MUST read these files for context.
 
 ### Workspace File Management
-**Local-Only Policy**: All files within `<project_root>/feature_<name>/` directories are considered local workflow context and should NEVER be committed to git:
+**Local-Only Policy**: All files within `<project_root>/task_<name>/` directories are considered local workflow context and should NEVER be committed to git:
 - These files are temporary working documents for planning and analysis
 - They contain intermediate thoughts, research notes, and decision-making processes
 - They are meant to be regenerated or recreated as needed for each workflow session
 - Committing them would clutter the repository with transient documentation
 
 **GitIgnore Integration**: When creating new workspaces, automatically update `.gitignore` with the standard pattern:
-- Add pattern: `feature_*/` to ignore all feature workspace directories
+- Add pattern: `task_*/` to ignore all task workspace directories
 - This single pattern covers all SDLC command workspaces consistently
 - Ensure the `.gitignore` is committed to maintain consistency across team members
 
