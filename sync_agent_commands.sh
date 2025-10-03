@@ -292,8 +292,15 @@ else
 fi
 log "Commands and user-level CLAUDE.md are now available for AI agents."
 
-# Setup codex profiles
+# Setup codex profiles (macOS only - uses sandbox-exec -p <profile>)
 setup_codex_profiles() {
+  # Only setup profiles on macOS where Codex uses sandbox-exec -p <profile>
+  # On Linux, Codex uses kernel sandboxing (Landlock + seccomp) directly
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    log "Skipping codex profiles setup (not macOS - Linux uses kernel sandboxing directly)"
+    return 0
+  fi
+  
   local config_file="${HOME}/.codex/config.toml"
   local temp_file="${config_file}.tmp"
   
