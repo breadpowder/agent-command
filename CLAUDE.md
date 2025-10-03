@@ -5,6 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 This is the AgentDK SDLC Commands repository - a universal, project-agnostic development workflow framework that provides standardized commands for comprehensive software development lifecycle management. These commands work across any technology stack, programming language, and team size, providing structured workflows for feature development, bug fixing, code review, refactoring, testing, and deployment. The repository contains documentation-based command specifications that can be synced to AI agent environments for consistent development practices.
 
+### Context7 MCP Integration
+The framework now integrates Context7 Model Context Protocol (MCP) for real-time documentation retrieval and validation:
+- **Library Resolution**: Automatic resolution of library/framework names to Context7-compatible IDs using `mcp_context7_resolve-library-id`
+- **Documentation Retrieval**: Real-time access to current documentation during all development phases using `mcp_context7_get-library-docs`
+- **Best Practices Validation**: Code validation against current framework standards and patterns
+- **Topic-Specific Guidance**: Focused documentation retrieval for specific implementation topics (e.g., 'authentication', 'routing', 'database', 'testing')
+- **Pseudocode Generation**: Structured code examples and architectural patterns in planning phases to aid understanding and implementation
+
 ## Build and Development Commands
 - **No build process required** - this is a documentation-first repository
 - **Preview markdown**: Use your editor's preview or `glow README.md` (optional)
@@ -110,11 +118,19 @@ IMPORTANT RULE: for commits,
 
 ## Key Workflow Principles
 
+### Context7-Enhanced Development Workflow
+All SDLC commands now integrate Context7 MCP for documentation-driven development:
+- **Planning Phase**: Library resolution and documentation retrieval inform architecture decisions
+- **Implementation Phase**: Topic-specific documentation guides development patterns
+- **Code Review Phase**: Validation against current framework standards and best practices
+- **Pseudocode Integration**: Structured code examples aid understanding and implementation
+
 ### 2-Hour Task Rule
 All complex tasks are automatically broken into ≤2 hour chunks with:
 - Clear validation criteria for each chunk
 - Regular checkpoint commits for progress tracking
 - Comprehensive planning before implementation
+- **Pseudocode Examples**: Each task includes structured pseudocode showing implementation approach
 
 ### Quality Gates
 - Built-in validation steps in each command
