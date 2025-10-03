@@ -292,6 +292,86 @@ else
 fi
 log "Commands and user-level CLAUDE.md are now available for AI agents."
 
+# Setup codex profiles
+setup_codex_profiles() {
+  local config_file="${HOME}/.codex/config.toml"
+  local temp_file="${config_file}.tmp"
+  
+  # Create .codex directory if it doesn't exist
+  mkdir -p "${HOME}/.codex"
+  
+  # Touch config file if it doesn't exist
+  if [[ ! -f "${config_file}" ]]; then
+    touch "${config_file}"
+  fi
+  
+  # Check if each profile exists and add if missing
+  local profiles_to_add=()
+  
+  # Check for [profiles.safe]
+  if ! grep -q "^\[profiles\.safe\]" "${config_file}"; then
+    profiles_to_add+=("safe")
+  fi
+  
+  # Check for [profiles.default]
+  if ! grep -q "^\[profiles\.default\]" "${config_file}"; then
+    profiles_to_add+=("default")
+  fi
+  
+  # Check for [profiles.danger]
+  if ! grep -q "^\[profiles\.danger\]" "${config_file}"; then
+    profiles_to_add+=("danger")
+  fi
+  
+  # If no profiles need to be added, return
+  if [[ ${#profiles_to_add[@]} -eq 0 ]]; then
+    log "All codex profiles already exist in ${config_file}"
+    return 0
+  fi
+  
+  log "Adding missing codex profiles: ${profiles_to_add[*]}"
+  
+  # Copy existing content to temp file
+  cp "${config_file}" "${temp_file}"
+  
+  # Add missing profiles
+  for profile in "${profiles_to_add[@]}"; do
+    case "${profile}" in
+      safe)
+        cat >> "${temp_file}" << 'EOF'
+
+[profiles.safe]
+sandbox_mode = "read_only"
+approval_policy = "on-request"
+EOF
+        ;;
+      default)
+        cat >> "${temp_file}" << 'EOF'
+
+[profiles.default]
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+EOF
+        ;;
+      danger)
+        cat >> "${temp_file}" << 'EOF'
+
+[profiles.danger]
+sandbox_mode = "danger-full-access"
+approval_policy = "never"
+EOF
+        ;;
+    esac
+  done
+  
+  # Replace original with updated file
+  mv "${temp_file}" "${config_file}"
+  log "✓ Updated ${config_file} with missing profiles"
+}
+
+# Setup codex profiles
+setup_codex_profiles
+
 # Helpful guidance for agent CLI usage (tooling best practices)
 cat <<'EOF'
 [sync] Tips for local CLI usage:
