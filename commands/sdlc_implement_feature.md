@@ -3,8 +3,7 @@
 ## Context first
 - Gather relevant context from the existing
   task_<name>/ stucture before planning or executing any task. 
-- Context7 references are optional; use them only when you need to refer to or verify third-party
-  APIs.
+- Context7 references are hightly recommended; use them only when you need to refer to or verify APIs.
 
 ## Purpose
 Specialized feature implementation that turns a plan into code. Clarification‑First: reflect user intent, bundle clarifying questions, wait for confirmation, and record assumptions as “unconfirmed”. Focus on backward compatibility. Use Context7 to validate APIs/configs during coding.
