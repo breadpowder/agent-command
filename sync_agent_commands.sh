@@ -60,6 +60,8 @@ case "${1:-}" in
     echo ""
     echo "Additional Setup:"
     echo "  - Context7 MCP server installation guidance (requires API key)"
+    echo "  - browsermcp MCP server installation (no API key required)"
+    echo "  - MCP server configuration for Codex CLI (if available)"
     echo ""
     echo "Examples:"
     echo "  sync_agent_commands.sh                           # Use local commands/"
@@ -400,39 +402,58 @@ setup_codex_mcp() {
     touch "${config_file}"
   fi
   
-  # Check if Context7 MCP server configuration exists
-  if grep -q "^\\[mcp_servers\\.context7\\]" "${config_file}"; then
+  # Track if any configurations were added
+  local configs_added=false
+  
+  # Setup Context7 MCP server configuration
+  if ! grep -q "^\\[mcp_servers\\.context7\\]" "${config_file}"; then
+    # Prompt for API key
+    echo ""
+    echo "Codex CLI Context7 MCP Setup:"
+    echo "Visit https://github.com/upstash/context7 to get your API key."
+    echo ""
+    echo -n "Enter your Context7 API key for Codex CLI (or press Enter to skip): "
+    read -r api_key
+    
+    if [[ -n "${api_key}" ]]; then
+      # Append Context7 MCP configuration
+      log "Adding Context7 MCP configuration to Codex..."
+      echo "" >> "${config_file}"
+      echo "[mcp_servers.context7]" >> "${config_file}"
+      echo "args = [\"-y\", \"@upstash/context7-mcp\", \"--api-key\", \"${api_key}\"]" >> "${config_file}"
+      echo "command = \"npx\"" >> "${config_file}"
+      log "✓ Successfully configured Context7 MCP server for Codex CLI"
+      configs_added=true
+    else
+      echo ""
+      echo "Manual installation instructions for Context7 on Codex CLI:"
+      echo "Add the following to ${config_file}:"
+      echo ""
+      echo "[mcp_servers.context7]"
+      echo "args = [\"-y\", \"@upstash/context7-mcp\", \"--api-key\", \"YOUR_API_KEY\"]"
+      echo "command = \"npx\""
+      echo ""
+    fi
+  else
     log "✓ Context7 MCP server already configured for Codex CLI"
-    return 0
   fi
   
-  # Prompt for API key
-  echo ""
-  echo "Codex CLI Context7 MCP Setup:"
-  echo "Visit https://github.com/upstash/context7 to get your API key."
-  echo ""
-  echo -n "Enter your Context7 API key for Codex CLI (or press Enter to skip): "
-  read -r api_key
-  
-  if [[ -z "${api_key}" ]]; then
-    echo ""
-    echo "Manual installation instructions for Codex CLI:"
-    echo "Add the following to ${config_file}:"
-    echo ""
-    echo "[mcp_servers.context7]"
-    echo "args = [\"-y\", \"@upstash/context7-mcp\", \"--api-key\", \"YOUR_API_KEY\"]"
-    echo "command = \"npx\""
-    echo ""
-    return 0
+  # Setup browsermcp MCP server configuration
+  if ! grep -q "^\\[mcp_servers\\.browsermcp\\]" "${config_file}"; then
+    log "Adding browsermcp MCP configuration to Codex..."
+    echo "" >> "${config_file}"
+    echo "[mcp_servers.browsermcp]" >> "${config_file}"
+    echo "args = [\"@browsermcp/mcp@latest\"]" >> "${config_file}"
+    echo "command = \"npx\"" >> "${config_file}"
+    log "✓ Successfully configured browsermcp MCP server for Codex CLI"
+    configs_added=true
+  else
+    log "✓ browsermcp MCP server already configured for Codex CLI"
   fi
   
-  # Append Context7 MCP configuration using updated format
-  log "Adding Context7 MCP configuration to Codex..."
-  echo "" >> "${config_file}"
-  echo "[mcp_servers.context7]" >> "${config_file}"
-  echo "args = [\"-y\", \"@upstash/context7-mcp\", \"--api-key\", \"${api_key}\"]" >> "${config_file}"
-  echo "command = \"npx\"" >> "${config_file}"
-  log "✓ Successfully configured Context7 MCP server for Codex CLI"
+  if [[ "${configs_added}" == "false" ]]; then
+    log "All MCP servers already configured for Codex CLI"
+  fi
 }
 
 # Call the new MCP setup function
@@ -446,7 +467,7 @@ setup_codex_mcp_config() {
   if ! command -v codex >/dev/null 2>&1; then
     echo ""
     echo "Codex CLI Setup (Optional):"
-    echo "If you plan to use Codex CLI, install it first and then add Context7 MCP configuration."
+    echo "If you plan to use Codex CLI, install it first and then add MCP server configurations."
     echo ""
     return 0
   fi
@@ -466,11 +487,17 @@ setup_codex_mcp_config() {
   fi
   
   echo ""
-  echo "Codex CLI Context7 MCP Setup:"
+  echo "Codex CLI MCP Setup:"
   echo "Add the following configuration to ${config_file}:"
   echo ""
+  echo "# Context7 MCP server (requires API key)"
   echo "[mcp_servers.context7]"
   echo "args = [\"-y\", \"@upstash/context7-mcp\", \"--api-key\", \"YOUR_API_KEY\"]"
+  echo "command = \"npx\""
+  echo ""
+  echo "# browsermcp MCP server (no API key required)"
+  echo "[mcp_servers.browsermcp]"
+  echo "args = [\"@browsermcp/mcp@latest\"]"
   echo "command = \"npx\""
   echo ""
   echo "Replace YOUR_API_KEY with your actual Context7 API key."
@@ -513,25 +540,58 @@ install_context7_mcp() {
   if [[ -z "${api_key}" ]]; then
     echo ""
     echo "Manual installation instructions:"
-    echo "  claude mcp add --transport http context7 https://mcp.context7.com/mcp --header \"CONTEXT7_API_KEY: YOUR_API_KEY\""
+    echo "  claude mcp add --transport http --scope user context7 https://mcp.context7.com/mcp --header \"CONTEXT7_API_KEY: YOUR_API_KEY\""
     echo ""
     return 0
   fi
   
   # Install Context7 MCP server for Claude Code CLI
   log "Installing Context7 MCP server..."
-  if claude mcp add --transport http context7 https://mcp.context7.com/mcp --header "CONTEXT7_API_KEY: ${api_key}" 2>/dev/null; then
+  if claude mcp add --transport http --scope user context7 https://mcp.context7.com/mcp --header "CONTEXT7_API_KEY: ${api_key}" 2>/dev/null; then
     log "✓ Successfully installed Context7 MCP server"
   else
     err "Failed to install Context7 MCP server"
     echo "Try manual installation:"
-    echo "  claude mcp add --transport http context7 https://mcp.context7.com/mcp --header \"CONTEXT7_API_KEY: ${api_key}\""
+    echo "  claude mcp add --transport http --scope user context7 https://mcp.context7.com/mcp --header \"CONTEXT7_API_KEY: ${api_key}\""
+  fi
+  
+}
+
+# Install browsermcp MCP server with user interaction
+install_browsermcp_mcp() {
+  log "Setting up browsermcp MCP server"
+  
+  # Check if Claude Code CLI is available
+  if ! command -v claude >/dev/null 2>&1; then
+    warn "Claude Code CLI not found. Install Claude Code CLI first:"
+    echo "  Visit: https://claude.ai/code for installation instructions"
+    echo ""
+    return 1
+  fi
+  
+  # Check if browsermcp MCP server already exists
+  if claude mcp list 2>/dev/null | grep -q "browsermcp"; then
+    log "✓ browsermcp MCP server already installed"
+    return 0
+  fi
+  
+  # Install browsermcp MCP server for Claude Code CLI
+  log "Installing browsermcp MCP server..."
+  if claude mcp add --transport stdio --scope user browsermcp -- npx @browsermcp/mcp@latest 2>/dev/null; then
+    log "✓ Successfully installed browsermcp MCP server"
+  else
+    err "Failed to install browsermcp MCP server"
+    echo "Try manual installation:"
+    echo "  claude mcp add --transport stdio --scope user browsermcp -- npx @browsermcp/mcp@latest"
   fi
   
 }
 
 # Install Context7 MCP server
 install_context7_mcp
+
+# Install browsermcp MCP server
+install_browsermcp_mcp
 
 # Helpful guidance for agent CLI usage (tooling best practices)
 cat <<'EOF'

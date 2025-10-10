@@ -3,7 +3,7 @@
 ## Context first
 - Gather relevant context from the existing
   task_<name>/ stucture before planning or executing any task.
-- Context7 mcpreferences are recommended; use them only when you need to refer to or verify APIs.
+- Context7 MCP is recommended for library/framework documentation and API references; use WebSearch for CLI parameters, configuration syntax, and tool-specific flags.
 
 IMPORTANT:
 1. Before you make any change, create and checkout a feature branch named feature/<feature_name> or bugfix/<issue_name> which is short and descriptive name and Make and then commit your changes in this branch.
@@ -30,13 +30,68 @@ The development workflow now integrates Context7 MCP for enhanced documentation-
 - **Topic-Specific Guidance**: Focused documentation retrieval for specific implementation topics (e.g., 'authentication', 'routing', 'database', 'testing')
 - **Pseudocode Generation**: Structured code examples and architectural patterns in planning phases to aid understanding and implementation
 
+### Research and Validation Protocol
+
+**CRITICAL RULE**: Always research and verify before implementation. Never assume syntax, parameters, or configuration formats.
+
+#### When to Use Context7 MCP (Libraries/Frameworks/APIs)
+Use Context7 MCP tools for:
+- **Library documentation**: React, Django, FastAPI, pandas, numpy, etc.
+- **Framework best practices**: Testing frameworks, web frameworks, ML libraries
+- **API references**: Standard library functions, third-party API usage
+- **Programming patterns**: Authentication, database patterns, async/await
+- **Language features**: Python syntax, JavaScript ES6+, TypeScript features
+
+**Context7 MCP Tools:**
+- `mcp_context7_resolve-library-id` - Resolve library names to Context7 IDs
+- `mcp_context7_get-library-docs` - Get specific documentation for libraries/frameworks
+
+#### When to Use Web Search (Tools/Configuration/Parameters)
+Use WebSearch and WebFetch for:
+- **CLI tool parameters**: `claude mcp add --scope user`, `git commit --amend`
+- **Configuration file syntax**: `.gitignore` patterns, `pyproject.toml` format
+- **Tool installation**: Package manager commands, system setup
+- **System commands**: Docker commands, shell scripting, environment setup
+- **Service configurations**: MCP server setup, deployment configurations
+
+**Web Research Tools:**
+- `WebSearch` - Find official documentation and authoritative sources
+- `WebFetch` - Get detailed syntax and parameters from official docs
+
+#### Research-First Implementation Process
+1. **Identify Type**: Determine if you need library docs (Context7) or tool syntax (Web)
+2. **Research**: Use appropriate tool to verify syntax/parameters/patterns
+3. **Cross-reference**: Check multiple sources when uncertain
+4. **Validate**: Confirm syntax against official documentation
+5. **Implement**: Only proceed after verification
+
+#### Example: Learning from MCP Parameter Mistake
+**Wrong Approach (Assumption-based):**
+```bash
+# Assumed parameter without research
+claude mcp add --user context7 https://...  # WRONG: --user doesn't exist
+```
+
+**Correct Approach (Research-first):**
+1. **WebSearch**: "claude mcp add command parameters scope"
+2. **WebFetch**: https://docs.claude.com/en/docs/claude-code/mcp
+3. **Verify**: Found correct parameter is `--scope user`
+4. **Implement**: `claude mcp add --transport http --scope user context7 https://...`
+
+#### Quick Reference Decision Tree
+- **Need library/API docs?** → Use Context7 MCP
+- **Need CLI/config syntax?** → Use WebSearch/WebFetch
+- **Uncertain about syntax?** → Research first, never assume
+- **Making tool/system changes?** → Always verify parameters
+
 ### Clarification‑First Policy (Minimize back-and-forth)
 - Reflect: Restate the user’s intent in your own words before acting.
+- Research: Apply Research and Validation Protocol above - verify syntax/parameters before implementation.
 - Ask: Bundle clarifying questions for any ambiguities or assumptions.
 - Confirm: Wait for confirmation before coding or making changes.
 - Record: Capture assumptions as “unconfirmed” until resolved.
 
-This policy applies to all SDLC commands and workflows.
+This policy applies to all SDLC commands and workflows. The Research step is mandatory for any tool usage, CLI commands, or configuration changes.
 
 ### Task Structure
 SDLC commands create and maintans feature or issue-specific workspaces with consistent `task_` prefix 
