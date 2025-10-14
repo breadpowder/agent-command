@@ -288,6 +288,32 @@ class ExternalServiceError(ProjectBaseException):
 * **Least privilege**: Minimal necessary permissions only
 * **Audit access**: Log and monitor security-relevant operations
 
+### CRITICAL: Credential Protection Policy
+
+**ABSOLUTE PROHIBITION**: Credentials (API keys, passwords, tokens, certificates, private keys, connection strings) MUST NEVER be committed or pushed to any repository.
+
+**Pre-Commit Mandatory Check:**
+Before ANY commit, you MUST:
+1. Scan all staged files for credentials
+2. If detected: ALERT user with specific file/line locations and BLOCK commit
+3. Propose remediation: move to .env, update .gitignore, modify code to use environment variables
+4. Only proceed after user confirms credentials are secured
+
+**User Alert Format When Detected:**
+```
+🚨 SECURITY ALERT: Credentials detected in <file>:<lines>
+Pattern: <credential_type>
+
+❌ COMMIT BLOCKED
+
+Proposed Fix:
+- Move credentials to .env file
+- Add .env to .gitignore
+- Update code to use os.getenv()
+
+How would you like to proceed?
+```
+
 ### Security Review Checklist
 * [ ] Input validation implemented
 * [ ] Authentication/authorization verified
