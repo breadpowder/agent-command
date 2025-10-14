@@ -2,3 +2,8 @@
 # Local SDLC workspaces (do not commit)
 task_*/
 refactor.md
+
+# Neo4j data directories (persistent but local-only)
+memory/neo4j_data/
+memory/neo4j_logs/
+memory/graphiti/  

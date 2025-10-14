@@ -113,22 +113,47 @@ log_success "All prerequisites validated!"
 # --- Phase 2: Neo4j startup ---
 log_info "Phase 2: Starting Neo4j database..."
 
+# Create local directories for persistent storage
+log_info "Creating local directories for Neo4j data persistence..."
+mkdir -p neo4j_data neo4j_logs
+log_success "Local directories created: $(pwd)/neo4j_data, $(pwd)/neo4j_logs"
+
 # Check if Neo4j is already running
 if docker ps --format "table {{.Names}}" | grep -q "^neo4j$"; then
-    log_warning "Neo4j container is already running. Stopping it first..."
-    docker stop neo4j >/dev/null 2>&1 || true
-    docker rm neo4j >/dev/null 2>&1 || true
+    log_success "Neo4j container is already running, preserving existing data!"
+    # Verify the container is healthy
+    if docker exec neo4j cypher-shell -u "${NEO4J_USER}" -p "${NEO4J_PASSWORD}" "RETURN 'Neo4j is accessible'" >/dev/null 2>&1; then
+        log_success "Existing Neo4j container is accessible and ready!"
+        # Skip starting - container is already running and healthy
+        NEO4J_ALREADY_RUNNING=true
+    else
+        log_warning "Existing Neo4j container is not responding, attempting restart..."
+        docker restart neo4j >/dev/null 2>&1
+        sleep 5  # Give it time to start
+        NEO4J_ALREADY_RUNNING=false
+    fi
+else
+    # Check if container exists but is stopped
+    if docker ps -a --format "table {{.Names}}" | grep -q "^neo4j$"; then
+        log_info "Neo4j container exists but is stopped, starting existing container..."
+        docker start neo4j >/dev/null 2>&1
+        sleep 5  # Give it time to start
+        NEO4J_ALREADY_RUNNING=false
+    else
+        # No container exists, create new one
+        log_info "Creating new Neo4j container with persistent local storage..."
+        docker compose up -d
+        NEO4J_ALREADY_RUNNING=false
+    fi
 fi
 
-# Start Neo4j with Docker Compose
-log_info "Starting Neo4j container..."
-docker compose up -d
-
-# Wait for Neo4j to be ready
-wait_for_neo4j "$NEO4J_URI" || {
-    log_error "Failed to start Neo4j. Check logs with: docker logs neo4j"
-    exit 1
-}
+# Wait for Neo4j to be ready (skip if already verified as running)
+if [[ "${NEO4J_ALREADY_RUNNING:-false}" != "true" ]]; then
+    wait_for_neo4j "$NEO4J_URI" || {
+        log_error "Failed to start Neo4j. Check logs with: docker logs neo4j"
+        exit 1
+    }
+fi
 
 log_success "Neo4j is running and accessible!"
 log_info "Neo4j Browser: http://localhost:7474 (login: ${NEO4J_USER}/${NEO4J_PASSWORD})"
