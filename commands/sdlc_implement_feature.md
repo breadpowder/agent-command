@@ -2,11 +2,39 @@
 
 ## Context first
 - Gather relevant context from the existing
-  task_<name>/ stucture before planning or executing any task. 
-- Context7 references are hightly recommended; use them only when you need to refer to or verify APIs.
+  task_<name>/ structure before planning or executing any task.
+- Context7 references are highly recommended; use them only when you need to refer to or verify APIs.
 
 ## Purpose
-Specialized feature implementation that turns a plan into code. Clarification‑First: reflect user intent, bundle clarifying questions, wait for confirmation, and record assumptions as “unconfirmed”. Focus on backward compatibility. Use Context7 to validate APIs/configs during coding.
+Specialized feature implementation that turns a plan into code. This spec defines the
+prompting and collaboration model; it does not auto‑run a workflow. Clarification‑first:
+reflect user intent, bundle clarifying questions, wait for confirmation, and record
+assumptions as “unconfirmed”. Focus on backward compatibility. Use Context7 to validate
+APIs/configs during coding.
+
+## Prompt template
+- Use a reveal‑gated cadence: after each subtask is completed and self‑verified,
+  summarize results and pause. Do not proceed until the user explicitly says "reveal"
+  or gives a go‑ahead.
+- At each pause, provide short manual verification instructions so the user can
+  validate locally before revealing the next step. Include: what to run, expected
+  outputs, affected files/paths, and how to roll back if needed.
+- Keep updates brief and actionable; surface blockers and decisions needed.
+
+Recommended prompt (copy/paste):
+```text
+You are assisting with SDLC feature implementation.
+Follow a reveal‑gated flow: after you finish and self‑verify a subtask,
+summarize the outcome and stop. Wait for me to reply "reveal" (or give
+explicit direction) before you continue. Do not batch steps or proceed
+without my go‑ahead. Prioritize backward compatibility and verify API usage
+against current documentation. Record assumptions as "unconfirmed" until
+validated.
+
+Before pausing, add a "Manual verification" note with steps and commands
+I can run to confirm results (and expected outputs). Then wait for me to say
+"reveal" to proceed.
+```
 
 ## Command Usage
 ```bash
@@ -21,6 +49,10 @@ sdlc_implement_feature --source bitbucket --name api-refactor --id 456
 
 # Simple usage (auto-detects everything)
 sdlc_implement_feature --name payment-system
+
+# Passing a reveal-gated prompt inline
+sdlc_implement_feature --name user-dashboard \
+  --prompt "Follow reveal-gated flow; stop after each verified subtask and wait for 'reveal'."
 ```
 
 **Simplified Parameters:**
@@ -100,6 +132,8 @@ This command creates commits at key checkpoints for traceability:
 - Confirm scope and acceptance criteria before coding.
 - Present design option trade-offs and request user selection.
 - Walk through the PR diff with the user if requested.
+- Use reveal‑gated progression: after each completed and verified task,
+  pause and wait for an explicit "reveal" from the user before starting the next.
 
 ### 4. Quality Gates and Definition of Done
 

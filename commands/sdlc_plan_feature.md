@@ -99,6 +99,9 @@ Minimal, one-file-per-leaf (create optional files only when complexity warrants 
 - Clarify requirements and constraints; confirm understanding before analysis.
 - Present 2–3 option sets with pros/cons; request user selection.
 - Share task breakdown; request approval before freezing the plan.
+ - When presenting artifacts, include a brief "Manual verification" guide so the user can
+   check outcomes (which files to open, commands to run, expected results) before giving
+   the go‑ahead.
 
 ### 5. Definition of Ready & Quality Standards
 
