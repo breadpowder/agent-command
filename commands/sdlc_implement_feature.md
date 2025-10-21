@@ -19,6 +19,8 @@ APIs/configs during coding.
 - At each pause, provide short manual verification instructions so the user can
   validate locally before revealing the next step. Include: what to run, expected
   outputs, affected files/paths, and how to roll back if needed.
+- Commit after each verified subtask: make an atomic commit with message
+  `sdlc: <name> - <task summary> complete`, including the updated status log.
 - Keep updates brief and actionable; surface blockers and decisions needed.
 
 Recommended prompt (copy/paste):
@@ -34,6 +36,27 @@ validated.
 Before pausing, add a "Manual verification" note with steps and commands
 I can run to confirm results (and expected outputs). Then wait for me to say
 "reveal" to proceed.
+```
+
+## Status logging
+- Location: `task_<name>/implementation/status.md`
+- Purpose: traceable subtask progress and verification notes.
+- Suggested formats:
+  - Markdown table:
+
+```markdown
+| Time (UTC) | Task | Status | Commit | Verification notes |
+|---|---|---|---|---|
+| 2025-01-01T12:34:56Z | Setup feature branch | completed | abc1234 | Branch `feat/user-auth` created from `main` |
+```
+
+  - Per-task sections:
+
+```markdown
+### Setup feature branch
+Status: completed (commit abc1234) — 2025-01-01T12:34:56Z
+Verification: `git branch --show-current` outputs `feat/user-auth`
+Notes: based off `main@def5678`.
 ```
 
 ## Command Usage
@@ -72,8 +95,17 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - feature implementation complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
 
+Per-task atomic commits
+- After each completed and verified subtask, create an atomic commit that includes the
+  code changes and the updated `implementation/status.md` entry.
+- Recommended message:
+  `git commit -m "sdlc: <name> - <task summary> complete"`
+- Keep commits focused (one subtask per commit). Reference external IDs when available
+  (e.g., `Refs: <id>`) and include a task key (e.g., `TASK-003`) if applicable.
+
 ### Outputs
 - `task_<name>/implementation/changes/changes.md`
+- `task_<name>/implementation/status.md`
 
 ## 🔹 PLAN
 ### 1. Scope confirmation
@@ -82,6 +114,7 @@ This command creates commits at key checkpoints for traceability:
 - **Context7 Documentation Sync**: Refresh library documentation using `mcp_context7_get-library-docs` for any libraries identified in planning to ensure latest API information.
 - **Pseudocode Review**: Validate pseudocode examples from planning phase and prepare for implementation.
 - Confirm acceptance criteria and out-of-scope items with the user.
+- Initialize status log: create `task_<name>/implementation/status.md` if missing.
 
 ### 2. Design choices and options
 - **Documentation-Informed Design**: Present focused choices where relevant (API shape, storage format, error strategy) with
@@ -134,6 +167,9 @@ This command creates commits at key checkpoints for traceability:
 - Walk through the PR diff with the user if requested.
 - Use reveal‑gated progression: after each completed and verified task,
   pause and wait for an explicit "reveal" from the user before starting the next.
+ - After each verified task, append a status entry to
+   `task_<name>/implementation/status.md` capturing time, task name, status, commit,
+   and verification notes.
 
 ### 4. Quality Gates and Definition of Done
 
