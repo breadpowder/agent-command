@@ -129,9 +129,6 @@ Per-task atomic commits
 - **Topic-Specific Documentation Retrieval**: Use `mcp_context7_get-library-docs` with specific topics (e.g., 'authentication', 'routing', 'database') as implementation needs arise.
 - **Pseudocode Refinement**: Update and refine pseudocode based on latest documentation patterns and best practices.
 - Decision gate (if needed): briefly record selected options with Context7 references.
-
-### 3. Task breakdown (2-hour rule)
-- Sequence tasks for incremental value; keep tasks ≤2h with clear validation criteria.
 - Identify integration points and required feature flags or config toggles.
 - For each task, restate the "Expected behavior" and "Manual verification" details from planning inside `implementation/status.md` before starting work.
 
@@ -179,7 +176,8 @@ Follow the vetted plan-first AI breakdown. For each numbered step, reference the
 - Present design option trade-offs and request user selection.
 - Walk through the PR diff with the user if requested.
 - Use reveal‑gated progression: after each completed and verified task,
-  pause and wait for an explicit "reveal" from the user before starting the next.
+  - pause and automaticall run verification/acceptance criteria defined for each task 
+  - if uncertain and need human intevention to verify, wait for an explicit "reveal" from the user before starting the next.
  - After each verified task, append a status entry to
    `task_<name>/implementation/status.md` capturing time, task name, status, commit,
    verification notes, expected vs. observed behavior, and guardrail status.
