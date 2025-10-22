@@ -48,7 +48,10 @@ This command creates commits at key checkpoints for traceability:
 
 ## 🔹 PLAN
 
-### 1. Comprehensive Requirements & Stakeholder Analysis
+### 1. Comprehensive Requirements, Assumptions & Guardrails
+
+- **Assumption register**: log all assumptions as `unconfirmed`, assign an owner, describe how/when to validate, and revisit at every checkpoint.
+- **Guardrail draft**: capture security, privacy, data-handling, budget, and operational boundaries that downstream AI agents must obey.
 
 **Business Stakeholder Identification:**
 - **Product Owners**: Feature champions and business requirements owners
@@ -68,16 +71,16 @@ Store all PRD artifacts under the single `specs/` folder within the task workspa
 ONLY if applicable (e.g., for non-API features, skip `api-contract.yaml`).
 ```
 <project_root>/task_<name>/
-├── specs/
-│   ├── feature-spec.md         # PRD: user requirements and value
-│   ├── user-stories.md         # Detailed user stories and acceptance criteria
-│   ├── business-case.md        # Business justification and success metrics
-│   ├── api-contract.yaml       # OpenAPI spec (if applicable)
-│   ├── acceptance-tests.json   # Structured acceptance criteria
-│   ├── observability.yaml      # Metrics, alerts, dashboards, SLOs
-│   └── rollout-config.yaml     # Feature flags, gating checks, backout steps
-└── context/
-    └── source-reference.md     # Original source context and links
+- specs/
+  - feature-spec.md         # PRD: user requirements and value
+  - user-stories.md         # Detailed user stories and acceptance criteria
+  - business-case.md        # Business justification and success metrics
+  - api-contract.yaml       # OpenAPI spec (if applicable)
+  - acceptance-tests.json   # Structured acceptance criteria
+  - observability.yaml      # Metrics, alerts, dashboards, SLOs
+  - rollout-config.yaml     # Feature flags, gating checks, backout steps
+- context/
+  - source-reference.md     # Original source context and links
 ```
 
 **IMPORTANT**: PRD artifacts must be written to `<project_root>/task_<name>/specs/`.
@@ -97,6 +100,7 @@ The `prd/feature-spec.md` file should include:
 - **API Contracts**: Drafted endpoints with examples
 - **Success Metrics**: Measurable targets and KPIs
 - **Risk Assessment**: Technical and business risks with mitigation strategies
+- **Agent guardrails**: Explicit constraints (files allowed, data sensitivity, forbidden actions) to hand off with the spec
 - **Open Questions**: Tracked with owners and due dates
 
 ### 3. User Story Development & Prioritization
@@ -164,7 +168,15 @@ The `prd/feature-spec.md` file should include:
 - **Timeline Risks**: Dependencies and critical path analysis
 - **Adoption Risks**: User acceptance and change management
 
-### 5. Definition of Ready (DoR) & Definition of Done (DoD)
+### 5. Spec-to-plan AI orchestration handoff
+
+- Package the updated spec artifacts and guardrails (assumptions, constraints, verification cues) for consumption by plan-first AI tooling (Claude Plan, Cursor Plan Mode, Spec-Kit).
+- Record exact file paths and commands the agent must use to ingest the spec inside `specs/feature-spec.md` under a `Plan handoff` section.
+- Add a `Human review gate` checklist naming the approvers who must sign off before any AI planning run.
+- Document required outputs the planning agent must produce (tasks with verifiable behaviors, file touch list, risk log, validation steps) so the spec doubles as the control surface.
+- Store links or references to decision logs, compliance requirements, and guardrails the planning stage must respect.
+
+### 6. Definition of Ready (DoR) & Definition of Done (DoD)
 
 **Definition of Ready - Before Implementation:**
 - Problem and goals are unambiguous
@@ -179,6 +191,7 @@ The `prd/feature-spec.md` file should include:
 - Backward compatibility assessed with API versioning policy
 - Risks and open questions logged with owners and due dates
 - Owner/DRI, timeline, and success metrics agreed
+- Spec-to-agent readiness checklist completed: guardrails, assumption register, and verification hooks linked for plan-first AI tooling
 
 **Definition of Done - After Deployment:**
 - All acceptance tests pass in CI with traceability to requirements
@@ -192,12 +205,13 @@ The `prd/feature-spec.md` file should include:
 - ADRs merged with links updated in spec/plan
 - Post-launch success review scheduled
 
-### 6. Quality Gates for CI Automation
+### 7. Quality Gates for CI Automation
 
 **Automated Validation Requirements:**
 - Schema validation on PR for all machine-readable specs
 - API contract diff check with compatibility rules enforcement
 - Acceptance tests must pass and map to F-### IDs for traceability
+- Spec lint: ensure guardrails, assumption register, and agent handoff checklist sections are populated before plan-first tooling consumes the spec
 
 ## Outputs
 - `task_<name>/specs/feature-spec.md`

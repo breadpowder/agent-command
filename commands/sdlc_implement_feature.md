@@ -19,6 +19,7 @@ APIs/configs during coding.
 - At each pause, provide short manual verification instructions so the user can
   validate locally before revealing the next step. Include: what to run, expected
   outputs, affected files/paths, and how to roll back if needed.
+- Reference the "Expected behavior" captured during planning and state what was observed so the user can compare quickly.
 - Commit after each verified subtask: make an atomic commit with message
   `sdlc: <name> - <task summary> complete`, including the updated status log.
 - Keep updates brief and actionable; surface blockers and decisions needed.
@@ -41,21 +42,26 @@ I can run to confirm results (and expected outputs). Then wait for me to say
 ## Status logging
 - Location: `task_<name>/implementation/status.md`
 - Purpose: traceable subtask progress and verification notes.
+- Tie each entry back to the planning artifact (`tasks.md` task id, expected behavior, guardrail notes) so every commit links to the originating spec item.
+- Capture evidence pointers: link Playwright screenshots/videos or API request/response logs that prove the expected behavior.
 - Suggested formats:
   - Markdown table:
 
 ```markdown
-| Time (UTC) | Task | Status | Commit | Verification notes |
-|---|---|---|---|---|
-| 2025-01-01T12:34:56Z | Setup feature branch | completed | abc1234 | Branch `feat/user-auth` created from `main` |
+| Time (UTC) | Task (plan id) | Status | Commit | Expected behavior | Observed behavior | Guardrail notes |
+|---|---|---|---|---|---|---|
+| 2025-01-01T12:34:56Z | PLAN-01 Setup feature branch | completed | abc1234 | New branch `feat/user-auth` exists | `git branch --show-current` -> `feat/user-auth` | Guardrails intact (no prod data touched) |
 ```
 
   - Per-task sections:
 
 ```markdown
-### Setup feature branch
+### PLAN-01 Setup feature branch
 Status: completed (commit abc1234) — 2025-01-01T12:34:56Z
-Verification: `git branch --show-current` outputs `feat/user-auth`
+Expected behavior: new branch `feat/user-auth` exists and tracks `origin/main`
+Observed behavior: `git branch --show-current` outputs `feat/user-auth`; `git rev-parse HEAD` matches plan baseline
+Guardrail check: no prod credentials or protected files modified
+Verification commands: `git status --short`, `git branch --show-current`
 Notes: based off `main@def5678`.
 ```
 
@@ -105,7 +111,7 @@ Per-task atomic commits
 
 ### Outputs
 - `task_<name>/implementation/changes/changes.md`
-- `task_<name>/implementation/status.md`
+- `task_<name>/implementation/status.md` (with plan task ids, expected vs observed behavior, guardrail checks)
 
 ## 🔹 PLAN
 ### 1. Scope confirmation
@@ -114,6 +120,8 @@ Per-task atomic commits
 - **Context7 Documentation Sync**: Refresh library documentation using `mcp_context7_get-library-docs` for any libraries identified in planning to ensure latest API information.
 - **Pseudocode Review**: Validate pseudocode examples from planning phase and prepare for implementation.
 - Confirm acceptance criteria and out-of-scope items with the user.
+- Cross-check the plan's guardrail checklist and unresolved assumptions; get explicit confirmation or updated guidance before coding.
+- Link each upcoming implementation subtask to its `plan/tasks/tasks.md` entry, capturing task id, expected behavior, and validation commands in the status log template.
 - Initialize status log: create `task_<name>/implementation/status.md` if missing.
 
 ### 2. Design choices and options
@@ -126,6 +134,7 @@ Per-task atomic commits
 ### 3. Task breakdown (2-hour rule)
 - Sequence tasks for incremental value; keep tasks ≤2h with clear validation criteria.
 - Identify integration points and required feature flags or config toggles.
+- For each task, restate the "Expected behavior" and "Manual verification" details from planning inside `implementation/status.md` before starting work.
 
 ## 🔹 CREATE
 ### Branch management
@@ -133,6 +142,7 @@ Per-task atomic commits
   (`feature/<name>` or `feat/<ticket>`). Commit incrementally and atomically.
 
 ### Implementation steps
+Follow the vetted plan-first AI breakdown. For each numbered step, reference the corresponding task id, guardrails, and expected behaviors, then log completion details (observed behavior, tests, commit) before proceeding.
 1. **Foundation with Context7 Guidance**: Data models, interfaces, configuration scaffolding using current framework patterns from Context7 documentation.
 2. **Business logic**: Core functionality behind feature flags where appropriate, implementing pseudocode patterns with Context7-informed best practices.
 3. **API/surface**: Endpoints, handlers, UI components, or CLIs as applicable, following current API design patterns from documentation.
@@ -141,6 +151,10 @@ Per-task atomic commits
 6. **Backward compatibility**: API versioning, schema evolution, migration safety using documented migration strategies.
 7. **Edge cases and failure modes**: Timeouts, retries, idempotency, partial failures following framework error handling patterns.
 8. **Rollout preparation**: Feature flags, kill switches, configuration validation using documented deployment strategies.
+
+### Automation-based verification
+- **UI layout & behavior**: Use Playwright (or equivalent) to exercise the specified interactions (clicks, form fills, navigation). Capture screenshots after each critical state and compare them against the layout/UI behavior spec; store the diff artifacts in the task workspace and reference them in the status log.
+- **API behavior**: Spin up the service (locally or in test env) and run the documented request suites (e.g., Playwright APIRequestContext, HTTP client scripts, curl collections). Validate status codes, payload shapes, headers, and error responses against the API contract, recording the evidence (logs, JSON clips) alongside the status entry.
 
 ### Context7 Integration During Implementation
 - **Just-in-Time Documentation**: Retrieve specific documentation topics as each implementation step begins
@@ -169,7 +183,7 @@ Per-task atomic commits
   pause and wait for an explicit "reveal" from the user before starting the next.
  - After each verified task, append a status entry to
    `task_<name>/implementation/status.md` capturing time, task name, status, commit,
-   and verification notes.
+   verification notes, expected vs. observed behavior, and guardrail status.
 
 ### 4. Quality Gates and Definition of Done
 
