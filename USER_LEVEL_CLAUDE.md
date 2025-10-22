@@ -510,3 +510,6 @@ NEVER use grep for project-wide searches (slow, ignores .gitignore). ALWAYS use 
 ## JSON
 
 - Use `jq` for parsing and transformations.
+
+If changes.md file document file exists, always  maintain this file as tracking log for what has been done what steps has been done and what has to be verify or has been verified for current and next steps to mark. I don't need pseudocode, you can refer to files, but we don't need pseudocode. alayws update the file before you commit codes.
+\ No newline at end of file

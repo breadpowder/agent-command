@@ -44,16 +44,15 @@ I can run to confirm results (and expected outputs). Then wait for me to say
 - Purpose: traceable subtask progress and verification notes.
 - Tie each entry back to the planning artifact (`tasks.md` task id, expected behavior, guardrail notes) so every commit links to the originating spec item.
 - Capture evidence pointers: link Playwright screenshots/videos or API request/response logs that prove the expected behavior.
-- Suggested formats:
-  - Markdown table:
+- Suggested log snippet:
+  - `2025-01-01T12:34:56Z — PLAN-01 Setup feature branch`
+    - Status: completed (commit abc1234)
+    - Expected: new branch `feat/user-auth` exists
+    - Observed: `git branch --show-current` -> `feat/user-auth`
+    - Evidence: `logs/plan-01-branch.txt`, screenshot `artifacts/plan-01.png` (if applicable)
+    - Guardrails: intact (no prod data touched)
 
-```markdown
-| Time (UTC) | Task (plan id) | Status | Commit | Expected behavior | Observed behavior | Guardrail notes |
-|---|---|---|---|---|---|---|
-| 2025-01-01T12:34:56Z | PLAN-01 Setup feature branch | completed | abc1234 | New branch `feat/user-auth` exists | `git branch --show-current` -> `feat/user-auth` | Guardrails intact (no prod data touched) |
-```
-
-  - Per-task sections:
+- Per-task sections:
 
 ```markdown
 ### PLAN-01 Setup feature branch
