@@ -142,6 +142,6 @@ Minimal, one-file-per-leaf (create optional files only when complexity warrants 
 
 ## Outputs
 - `task_<name>/plan/tasks/tasks.md`
-- `task_<name>/plan/tasks/tasks_details.md`_
+- `task_<name>/plan/tasks/tasks_details.md` (the file is required for details in the most crtical task, e.g. integration patterns, calls  or document 3rd API references will be used. Don't real code implementation, for real code, refer to the file name will be created)
 - `task_<name>/plan/status.md`
 - Optional: `task_<name>/plan/strategy/strategy.md`

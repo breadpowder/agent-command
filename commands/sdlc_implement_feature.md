@@ -177,7 +177,7 @@ Follow the vetted plan-first AI breakdown. For each numbered step, reference the
 - Walk through the PR diff with the user if requested.
 - Use reveal‑gated progression: after each completed and verified task,
   - pause and automaticall run verification/acceptance criteria defined for each task 
-  - if uncertain and need human intevention to verify, wait for an explicit "reveal" from the user before starting the next.
+  - Engage human intevention to verify if the verification can't be done by you
  - After each verified task, append a status entry to
    `task_<name>/implementation/status.md` capturing time, task name, status, commit,
    verification notes, expected vs. observed behavior, and guardrail status.
