@@ -7,3 +7,10 @@ refactor.md
 memory/neo4j_data/
 memory/neo4j_logs/
 memory/graphiti/  
+
+node_modules/
+
+# Claude Code synced resources (synced from external repos)
+.claude/agents/
+.claude/hooks/
+.claude/skills/

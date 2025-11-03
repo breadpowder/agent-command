@@ -109,8 +109,7 @@ Per-task atomic commits
   (e.g., `Refs: <id>`) and include a task key (e.g., `TASK-003`) if applicable.
 
 ### Outputs
-- `task_<name>/implementation/changes/changes.md`
-- `task_<name>/implementation/status.md` (with plan task ids, expected vs observed behavior, guardrail checks)
+- `task_<name>/implementation/status.md` (change logs, task id must be ALWAUS BE consistent with tasks.md for reference)
 
 ## 🔹 PLAN
 ### 1. Scope confirmation

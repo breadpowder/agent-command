@@ -593,6 +593,15 @@ install_context7_mcp
 # Install browsermcp MCP server
 install_browsermcp_mcp
 
+# Install skill-activation-prompt hook to current project
+log "Installing skill-activation-prompt hook..."
+if [[ -x "${SCRIPT_DIR}/sync_skill.sh" ]]; then
+  "${SCRIPT_DIR}/sync_skill.sh" --project-dir "${PWD}" || warn "Failed to install skill-activation-prompt hook"
+else
+  warn "sync_skill.sh not found or not executable at: ${SCRIPT_DIR}/sync_skill.sh"
+  warn "Skipping skill-activation-prompt installation"
+fi
+
 # Helpful guidance for agent CLI usage (tooling best practices)
 cat <<'EOF'
 [sync] Tips for local CLI usage:
