@@ -156,3 +156,48 @@ Commands support GitHub, Bitbucket, and local development with appropriate CLI i
 - Ensure workspace outputs match documented structure
 - Test command parameters and flag combinations
 - Verify git integration and commit patterns work correctly
+
+
+
+
+
+
+## Hook Debugging
+
+When creating or debugging Claude Code hooks, follow these systematic debugging practices to identify and resolve issues efficiently.
+
+### Configuration Validation
+Always validate JSON configuration files before debugging hook logic:
+```bash
+# Validate user-level and project-level configurations
+cat ~/.claude/settings.json | jq .
+cat .claude/settings.json | jq .
+```
+
+### Research-First Approach
+- Read official documentation before implementing custom hooks
+- Use WebFetch to retrieve current documentation: `https://docs.claude.com/en/docs/claude-code/hooks.md`
+- Validate hook schemas and field names against documented examples
+- Verify hook event types and required output fields
+
+### Debug Logging Pattern
+Add logging to capture actual input and output during hook execution:
+```bash
+# Log hook invocations for debugging
+INPUT=$(cat)
+echo "Hook called: $INPUT" >> /tmp/hook-debug.log
+# ... rest of script logic
+```
+
+### Isolated Testing
+Test hooks with sample data before relying on live automation:
+```bash
+# Test PreToolUse hook with sample JSON input
+echo '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git push"}}' | .claude/hooks/your-hook.sh
+```
+
+### Common Hook Issues
+- **Incorrect JSON field names**: Verify field names match documented schema
+- **Missing required output fields**: Ensure all required fields are present in hook responses
+- **Global configuration syntax errors**: JSON syntax errors break all settings
+- **Permission issues**: Ensure hook scripts are executable (`chmod +x`)
