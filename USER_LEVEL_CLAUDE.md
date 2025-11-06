@@ -16,7 +16,7 @@ IMPORTANT:
 
 ## Subagent Execution Strategy
 
-**CRITICAL**: Always maximize parallel agent execution for speed and efficiency. When tasks are independent, launch multiple agents in a SINGLE message with multiple Task tool calls instead of sequential execution. Use specialized agents proactively: Explore agents for codebase discovery, Plan agents for task breakdown, Web-Research-Specialist for debugging and best practices, Refactor-Planner for code improvement, Documentation-Architect for docs, Frontend-Error-Fixer for build/runtime errors, Auth-Route-Debugger for authentication issues, and Code-Architecture-Reviewer for post-implementation validation. Think parallel first (3-5x faster), sequential only when later agents need results from earlier ones.
+**CRITICAL**: MUST Always maximize parallel agent execution for speed and efficiency. When tasks are independent, launch multiple agents in a SINGLE message with multiple Task tool calls instead of sequential execution. Use specialized agents proactively: Explore agents for codebase discovery, Plan agents for task breakdown, Web-Research-Specialist for debugging and best practices, Refactor-Planner for code improvement, Documentation-Architect for docs, Frontend-Error-Fixer for build/runtime errors, Auth-Route-Debugger for authentication issues, and Code-Architecture-Reviewer for post-implementation validation. Think parallel first (3-5x faster), sequential only when later agents need results from earlier ones.
 
 ---
 
