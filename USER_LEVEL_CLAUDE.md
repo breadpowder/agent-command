@@ -18,6 +18,10 @@ IMPORTANT:
 
 **CRITICAL**: MUST Always maximize parallel agent execution for speed and efficiency. When tasks are independent, launch multiple agents in a SINGLE message with multiple Task tool calls instead of sequential execution. Use specialized agents proactively: Explore agents for codebase discovery, Plan agents for task breakdown, Web-Research-Specialist for debugging and best practices, Refactor-Planner for code improvement, Documentation-Architect for docs, Frontend-Error-Fixer for build/runtime errors, Auth-Route-Debugger for authentication issues, and Code-Architecture-Reviewer for post-implementation validation. Think parallel first (3-5x faster), sequential only when later agents need results from earlier ones.
 
+## NO Sensitivity Information
+
+**CRITICAL PRE-PUSH CHECK**: Before executing any git push command, automatically scan all staged files including README.md and all markdown files (.md) for sensitive information such as API keys, passwords, tokens, private URLs, internal hostnames, email addresses, phone numbers, or any proprietary data that should not be publicly exposed in the repository. If any potential sensitive information is detected, immediately alert the user with specific file locations and line numbers, clearly describe what was found, and wait for explicit user instruction before proceeding with the push. Never proceed with pushing sensitive information without user confirmation and remediation.
+
 ---
 
 ## 1. Documentation Synchronization
