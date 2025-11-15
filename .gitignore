@@ -13,6 +13,8 @@ node_modules/
 # Claude Code synced resources (synced from external repos)
 .claude/agents/
 .claude/hooks/
-.claude/skills/
+.claude/skills/*
+!.claude/skills/skill-rules.json
+.claude/tsc-cache/
 
 .claude/settings.json

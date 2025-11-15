@@ -1,0 +1,247 @@
+{
+  "version": "1.0",
+  "description": "Skill activation triggers for Claude Code. Controls when skills automatically suggest or block actions.",
+  "skills": {
+      "skill-developer": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Meta-skill for creating and managing Claude Code skills",
+          "promptTriggers": {
+              "keywords": [
+                  "skill system",
+                  "create skill",
+                  "add skill",
+                  "skill triggers",
+                  "skill rules",
+                  "hook system",
+                  "skill development",
+                  "skill-rules.json"
+              ],
+              "intentPatterns": [
+                  "(how do|how does|explain).*?skill",
+                  "(create|add|modify|build).*?skill",
+                  "skill.*?(work|trigger|activate|system)"
+              ]
+          }
+      },
+      "extract-style-guide-skill": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "medium",
+          "description": "HYBRID SKILL (Cheerio + Claude): Extracts raw design data from HTML templates (Stage 1: automated) then REQUIRES Claude analysis (Stage 2: mandatory) for comprehensive style guide with insights, HEX conversions, and migration guide",
+          "promptTriggers": {
+              "keywords": [
+                  "extract style guide",
+                  "generate style guide",
+                  "create style guide",
+                  "style guide from template",
+                  "extract design patterns",
+                  "extract css patterns",
+                  "document design system",
+                  "extract design tokens",
+                  "extract colors from template",
+                  "extract typography",
+                  "extract spacing",
+                  "analyze template styles",
+                  "extract component styles",
+                  "style guide extraction",
+                  "design system documentation"
+              ],
+              "intentPatterns": [
+                  "(extract|generate|create|make).*?(style guide|design guide|style patterns)",
+                  "(analyze|extract|document).*?(template|html|design|styles)",
+                  "(extract|get|document).*(design tokens|css variables|color palette|typography)",
+                  "document.*?(design system|component styles|ui patterns)",
+                  "(create|generate).*?style.*?guide.*?(from|for).*?(template|html)",
+                  "what.*?(colors|fonts|spacing|shadows).*?(used|defined).*?template"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  ".superdesign/design_iterations/**/*.html",
+                  ".superdesign/**/*.html",
+                  "designs/**/*.html",
+                  "templates/**/*.html",
+                  "mockups/**/*.html"
+              ],
+              "pathExclusions": [
+                  "node_modules/**/*",
+                  "dist/**test/*",
+                  "build/**/*",
+                  ".next/**/*"
+              ],
+              "contentPatterns": [
+                  ":root\\s*{",
+                  "--[\\w-]+:\\s*oklch\\(",
+                  "--[\\w-]+:\\s*hsl\\(",
+                  "--[\\w-]+:\\s*rgb\\(",
+                  "@keyframes",
+                  "Google Fonts",
+                  "fonts\\.googleapis\\.com",
+                  "lucide",
+                  "heroicons"
+              ]
+          }
+      },
+      "playwright-skill": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Playwright testing for NEWLY added or modified UI components - validates user interactions and visual behavior. NOT for existing e2e test coverage.",
+          "promptTriggers": {
+              "keywords": [
+                  "test new component",
+                  "test new ui",
+                  "verify new component",
+                  "check new ui",
+                  "validate new component",
+                  "test added component",
+                  "test updated component",
+                  "test modified component",
+                  "screenshot new",
+                  "take screenshot",
+                  "capture screenshot",
+                  "visual test",
+                  "test this component",
+                  "verify this component",
+                  "test the new button",
+                  "test the new form",
+                  "test the new modal",
+                  "test the new page",
+                  "does it work",
+                  "is it working",
+                  "make sure it works",
+                  "user interaction",
+                  "responsive design",
+                  "mobile view",
+                  "desktop view"
+              ],
+              "intentPatterns": [
+                  "(test|verify|validate|check).*(new|added|updated|modified|created|this|the).*(component|ui|page|button|form|modal|dialog)",
+                  "(just|i).*(added|created|updated|modified|built|implemented).*(component|ui|page|button|form|modal).*(test|verify|check|work)",
+                  "(take|capture|get|grab).*?(screenshot|screen shot|image|visual)",
+                  "(does|is|will).*(it|this|the|component|page).*(work|working|function|behave|look)",
+                  "make sure.*(works|working|correct|properly)",
+                  "(verify|check|test).*(user|interaction|click|submit|fill|navigation)",
+                  "(test|verify).*(responsive|mobile|desktop|tablet).*(view|design|layout)",
+                  "i (updated|added|modified|changed|created).*(now|can you)?.*(test|verify|check|make sure)"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  "components/**/*.tsx",
+                  "components/**/*.ts",
+                  "app/**/*.tsx",
+                  "app/**/page.tsx",
+                  "app/**/page-client.tsx",
+                  "app/**/layout.tsx",
+                  "lib/components/**/*.tsx",
+                  "src/components/**/*.tsx",
+                  "src/pages/**/*.tsx"
+              ],
+              "pathExclusions": [
+                  "**/*.test.tsx",
+                  "**/*.test.ts",
+                  "**/*.spec.tsx",
+                  "**/*.spec.ts",
+                  "__tests__/**/*",
+                  "**/*.e2e.ts",
+                  "**/*.e2e.tsx",
+                  "node_modules/**/*"
+              ],
+              "contentPatterns": [
+                  "onClick",
+                  "onSubmit",
+                  "onChange",
+                  "onFocus",
+                  "onBlur",
+                  "handleClick",
+                  "handleSubmit",
+                  "handleChange",
+                  "<button",
+                  "<form",
+                  "<input",
+                  "<textarea",
+                  "<select",
+                  "type=\"submit\"",
+                  "type=\"button\"",
+                  "Dialog",
+                  "Modal",
+                  "Popover",
+                  "Drawer",
+                  "Sheet",
+                  "router\\.push",
+                  "useRouter",
+                  "Link.*href",
+                  "navigate\\(",
+                  "useState",
+                  "useForm"
+              ]
+          }
+      }
+  },
+  "notes": {
+      "enforcement_types": {
+          "suggest": "Skill suggestion appears but doesn't block execution",
+          "block": "Requires skill to be used before proceeding (guardrail)",
+          "warn": "Shows warning but allows proceeding"
+      },
+      "priority_levels": {
+          "critical": "Highest - Always trigger when matched",
+          "high": "Important - Trigger for most matches",
+          "medium": "Moderate - Trigger for clear matches",
+          "low": "Optional - Trigger only for explicit matches"
+      },
+      "playwright_activation_strategy": {
+          "purpose": "Validates NEWLY added or modified UI components through quick Playwright tests",
+          "not_for": "Existing e2e test coverage (__tests__/**/*) - those are handled by test suite",
+          "trigger_when": [
+              "User adds/updates a component with user interactions (onClick, forms, buttons)",
+              "User asks to test/verify a NEW or MODIFIED component",
+              "User wants screenshots or visual confirmation of changes",
+              "User says 'I just added/updated...' and wants verification"
+          ],
+          "do_not_trigger_when": [
+              "Running existing e2e test suite",
+              "Working in __tests__/ directory",
+              "User explicitly mentions 'e2e tests' or 'test suite'"
+          ]
+      },
+      "extract_style_guide_activation_strategy": {
+          "purpose": "HYBRID SKILL: Combines automated extraction (cheerio) with mandatory Claude analysis for comprehensive style guides",
+          "methodology": "Two-stage process: (1) Cheerio extracts raw data, (2) Claude analyzes for insights",
+          "when_to_use": [
+              "User has created a new HTML template/mockup and wants to document its styling",
+              "User wants to extract design tokens (colors, typography, spacing) from a template",
+              "User needs to maintain consistent styling across multiple pages",
+              "User asks to analyze or document the design patterns in a template",
+              "User wants to create a design system from existing templates"
+          ],
+          "output": {
+              "stage1_automated": [
+                  "extraction-data.json - Raw JSON data from cheerio",
+                  "STYLE_GUIDE.md - Basic automated guide (8-10 KB)",
+                  "claude-analysis-prompt.md - Prompt for Claude analysis"
+              ],
+              "stage2_claude_required": [
+                  "STYLE_GUIDE_ENHANCED.md - Comprehensive guide with insights (50+ KB)"
+              ]
+          },
+          "usage_example": "cd .claude/skills/extract-style-guide-skill && node run.js /path/to/template.html",
+          "typical_workflow": [
+              "1. Design team creates HTML mockup in .superdesign/design_iterations/",
+              "2. Run extract-style-guide-skill (cheerio extraction + basic guide)",
+              "3. Claude reads claude-analysis-prompt.md and generates STYLE_GUIDE_ENHANCED.md",
+              "4. Use STYLE_GUIDE_ENHANCED.md to apply consistent styles to production pages",
+              "5. Update style guide whenever new design patterns are added"
+          ],
+          "important_notes": [
+              "⚠️ This is a HYBRID skill - both stages are required for comprehensive results",
+              "Stage 1 (Cheerio): Fast extraction, basic documentation",
+              "Stage 2 (Claude): REQUIRED for insights, HEX conversion, migration guide",
+              "See .claude/skills/extract-style-guide-skill/README.md for details"
+          ]
+      }
+  }
+}
