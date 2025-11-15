@@ -96,13 +96,34 @@ case "${HOOK_TYPE}" in
     ;;
 esac
 
-# Validate project directory
+# Validate project directory exists
 if [[ ! -d "${PROJECT_DIR}" ]]; then
   err "Project directory does not exist: ${PROJECT_DIR}"
   exit 1
 fi
 
-log "Installing Claude Code hooks to: ${PROJECT_DIR}"
+# ============================================================================
+# Git Repository Validation
+# ============================================================================
+# Claude Code hooks are project-specific and work best in git-tracked projects.
+# This validation ensures:
+# 1. The target directory is a git repository (has .git directory)
+# 2. Prevents installing hooks in non-project directories
+# 3. Provides clear instructions if git is not initialized
+# ============================================================================
+if [[ ! -d "${PROJECT_DIR}/.git" ]]; then
+  err "Not a git repository: ${PROJECT_DIR}"
+  err ""
+  err "Claude Code hooks require a git repository."
+  err "Initialize git first:"
+  err "  cd ${PROJECT_DIR}"
+  err "  git init"
+  err "  git add ."
+  err "  git commit -m 'Initial commit'"
+  exit 1
+fi
+
+log "Installing Claude Code hooks to git repository: ${PROJECT_DIR}"
 
 # Check if git is available
 if ! command -v git >/dev/null 2>&1; then
@@ -217,20 +238,124 @@ install_post_tool_use_tracker() {
   return 0
 }
 
-# Function to update settings.json with hook configurations
+# ============================================================================
+# Hook Existence Detection Function
+# ============================================================================
+# Safely checks if a specific hook command already exists in settings.json
+#
+# Parameters:
+#   $1 - hook_type: "UserPromptSubmit" or "PostToolUse"
+#   $2 - command_path: Hook script filename (e.g., "skill-activation-prompt.sh")
+#
+# Returns (via echo):
+#   "true"    - Hook exists in the specified hook type array
+#   "false"   - Hook does not exist (safe to add)
+#   "invalid" - JSON format is invalid (abort to prevent data loss)
+#
+# Logic Flow:
+#   1. Check if settings.json file exists
+#   2. Validate JSON format with jq
+#   3. Search for command path in the hook type array using jq query
+#   4. Return detection result
+#
+# Why jq instead of grep:
+#   - grep can match comments or malformed JSON
+#   - jq parses actual JSON structure, ensuring accuracy
+#   - jq prevents false positives from similar strings
+# ============================================================================
+hook_exists_in_settings() {
+  local hook_type=$1  # "UserPromptSubmit" or "PostToolUse"
+  local command_path=$2  # e.g., "skill-activation-prompt.sh"
+
+  # Step 1: Check if settings.json exists
+  if [[ ! -f "${SETTINGS_FILE}" ]]; then
+    echo "false"  # File doesn't exist, hook cannot exist
+    return
+  fi
+
+  # Step 2: Validate JSON format first to prevent corruption
+  if ! jq empty "${SETTINGS_FILE}" 2>/dev/null; then
+    warn "Invalid JSON in ${SETTINGS_FILE}"
+    echo "invalid"  # Return special value to signal corruption
+    return
+  fi
+
+  # Step 3: Search for hook command using jq query
+  # Query explanation:
+  #   .hooks[$hook_type]? // []  - Get hook type array, default to empty if missing
+  #   .[]                         - Iterate over array elements
+  #   .hooks[]?                   - Get nested hooks array
+  #   select(.command? | contains($cmd_path))  - Filter for matching command
+  #   .command                    - Return the command field
+  local exists=$(jq -r --arg hook_type "${hook_type}" --arg cmd_path "${command_path}" '
+    .hooks[$hook_type]? // [] |
+    .[] |
+    .hooks[]? |
+    select(.command? | contains($cmd_path)) |
+    .command
+  ' "${SETTINGS_FILE}" 2>/dev/null)
+
+  # Step 4: Return detection result
+  if [[ -n "${exists}" ]]; then
+    echo "true"   # Hook command found in JSON structure
+  else
+    echo "false"  # Hook command not found
+  fi
+}
+
+# ============================================================================
+# Settings.json Update Function with JSON Integrity Validation
+# ============================================================================
+# Safely creates or updates .claude/settings.json with hook configurations
+#
+# Parameters:
+#   $1 - needs_skill_activation: "true" if skill-activation-prompt should be added
+#   $2 - needs_post_tool_use: "true" if post-tool-use-tracker should be added
+#
+# Safety Mechanisms:
+#   1. Requires jq for all operations (no fallback to prevent corruption)
+#   2. Validates JSON before reading existing file
+#   3. Validates JSON after each modification
+#   4. Uses temporary files with atomic replacement
+#   5. Rolls back on validation failure
+#
+# Workflow:
+#   - If file doesn't exist: Create new with required hooks
+#   - If file exists: Detect existing hooks → Add only missing ones
+#
+# Returns:
+#   0 - Success (file created or updated)
+#   1 - Failure (jq missing, invalid JSON, or update failed)
+# ============================================================================
 update_settings_json() {
   local needs_skill_activation=$1
   local needs_post_tool_use=$2
 
-  # Check if jq is available for JSON manipulation
+  # -------------------------------------------------------------------------
+  # Requirement: jq is mandatory for safe JSON operations
+  # -------------------------------------------------------------------------
+  # We no longer support manual updates or grep-based detection because:
+  # - grep can match strings in comments or malformed JSON
+  # - Manual updates risk JSON syntax errors
+  # - jq ensures structural integrity at every step
+  # -------------------------------------------------------------------------
   if ! command -v jq >/dev/null 2>&1; then
-    warn "jq not found - using basic JSON generation"
-    warn "Install jq for better JSON merging: sudo apt-get install jq (Debian/Ubuntu) or brew install jq (macOS)"
-    use_jq=false
-  else
-    use_jq=true
+    warn "jq not found - cannot safely update settings.json"
+    warn "Install jq: sudo apt-get install jq (Debian/Ubuntu) or brew install jq (macOS)"
+    warn ""
+    warn "Manual configuration required. Add to ${SETTINGS_FILE}:"
+    if [[ "${needs_skill_activation}" == "true" ]]; then
+      echo '  "hooks.UserPromptSubmit": skill-activation-prompt.sh'
+    fi
+    if [[ "${needs_post_tool_use}" == "true" ]]; then
+      echo '  "hooks.PostToolUse": post-tool-use-tracker.sh'
+    fi
+    return 1
   fi
 
+  # -------------------------------------------------------------------------
+  # Case 1: Settings file doesn't exist - Create new file
+  # -------------------------------------------------------------------------
   if [[ ! -f "${SETTINGS_FILE}" ]]; then
     log "Creating settings.json with hook configurations..."
 
@@ -300,81 +425,131 @@ SETTINGS_EOF
 SETTINGS_EOF
     fi
 
+    # Validate the JSON we just created
+    if ! jq empty "${SETTINGS_FILE}" 2>/dev/null; then
+      err "Failed to create valid JSON in ${SETTINGS_FILE}"
+      return 1
+    fi
+
     log "✓ Created settings.json with hook configuration"
-  else
-    # Settings file exists - merge configurations automatically
-    log "Updating existing settings.json..."
-
-    # Check what's already configured
-    local has_skill_activation=$(grep -q "skill-activation-prompt.sh" "${SETTINGS_FILE}" && echo "true" || echo "false")
-    local has_post_tool_use=$(grep -q "post-tool-use-tracker.sh" "${SETTINGS_FILE}" && echo "true" || echo "false")
-
-    local changes_made=false
-
-    if [[ "${use_jq}" == "true" ]]; then
-      # Use jq for proper JSON merging
-      TEMP_SETTINGS=$(mktemp)
-
-      # Add skill-activation-prompt if needed
-      if [[ "${needs_skill_activation}" == "true" && "${has_skill_activation}" == "false" ]]; then
-        log "Adding UserPromptSubmit hook configuration..."
-        jq '.hooks.UserPromptSubmit = [
-          {
-            "hooks": [
-              {
-                "type": "command",
-                "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/skill-activation-prompt.sh"
-              }
-            ]
-          }
-        ]' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
-        mv "${TEMP_SETTINGS}" "${SETTINGS_FILE}"
-        changes_made=true
-        log "✓ Added UserPromptSubmit hook configuration"
-      fi
-
-      # Add post-tool-use-tracker if needed
-      if [[ "${needs_post_tool_use}" == "true" && "${has_post_tool_use}" == "false" ]]; then
-        log "Adding PostToolUse hook configuration..."
-        jq '.hooks.PostToolUse = [
-          {
-            "matcher": "Edit|MultiEdit|Write",
-            "hooks": [
-              {
-                "type": "command",
-                "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-tool-use-tracker.sh"
-              }
-            ]
-          }
-        ]' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
-        mv "${TEMP_SETTINGS}" "${SETTINGS_FILE}"
-        changes_made=true
-        log "✓ Added PostToolUse hook configuration"
-      fi
-
-      rm -f "${TEMP_SETTINGS}"
-    else
-      # Fallback: manual instructions if jq is not available
-      if [[ "${needs_skill_activation}" == "true" && "${has_skill_activation}" == "false" ]]; then
-        warn "settings.json exists but doesn't include skill-activation-prompt hook"
-        echo "Please add the UserPromptSubmit hook configuration manually or install jq"
-      fi
-
-      if [[ "${needs_post_tool_use}" == "true" && "${has_post_tool_use}" == "false" ]]; then
-        warn "settings.json exists but doesn't include post-tool-use-tracker hook"
-        echo "Please add the PostToolUse hook configuration manually or install jq"
-      fi
-    fi
-
-    # Report final status
-    if [[ "${changes_made}" == "true" ]]; then
-      log "✓ Updated settings.json with new hook configurations"
-    elif [[ "${has_skill_activation}" == "true" && "${has_post_tool_use}" == "true" ]]; then
-      log "✓ settings.json already configured with both hooks"
-    elif [[ "${has_skill_activation}" == "true" || "${has_post_tool_use}" == "true" ]]; then
-      log "✓ settings.json already configured with requested hooks"
-    fi
+    return 0
   fi
+
+  # -------------------------------------------------------------------------
+  # Case 2: Settings file exists - Validate and merge configurations
+  # -------------------------------------------------------------------------
+  log "Validating and updating existing settings.json..."
+
+  # Step 1: Validate existing JSON format before making any changes
+  if ! jq empty "${SETTINGS_FILE}" 2>/dev/null; then
+    err "Existing settings.json has invalid JSON format: ${SETTINGS_FILE}"
+    err "Please fix JSON syntax or delete the file to recreate it"
+    return 1
+  fi
+
+  # Step 2: Detect what's already configured using hook_exists_in_settings()
+  # This uses jq to parse JSON structure (not grep) for accurate detection
+  local has_skill_activation=$(hook_exists_in_settings "UserPromptSubmit" "skill-activation-prompt.sh")
+  local has_post_tool_use=$(hook_exists_in_settings "PostToolUse" "post-tool-use-tracker.sh")
+
+  # Step 3: Handle invalid JSON detected by hook_exists_in_settings()
+  if [[ "${has_skill_activation}" == "invalid" || "${has_post_tool_use}" == "invalid" ]]; then
+    err "Cannot update settings.json due to invalid JSON format"
+    return 1
+  fi
+
+  local changes_made=false
+  TEMP_SETTINGS=$(mktemp)
+
+  # Step 4: Ensure .hooks object exists in JSON structure
+  jq '.hooks //= {}' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
+  mv "${TEMP_SETTINGS}" "${SETTINGS_FILE}"
+
+  # -------------------------------------------------------------------------
+  # Atomic Update Pattern for UserPromptSubmit Hook
+  # -------------------------------------------------------------------------
+  # Pattern: Original → jq transform → Temp file → Validate → Replace
+  # If validation fails: Discard temp file, keep original (no data loss)
+  # -------------------------------------------------------------------------
+  if [[ "${needs_skill_activation}" == "true" && "${has_skill_activation}" == "false" ]]; then
+    log "Adding UserPromptSubmit hook configuration..."
+
+    # Step 1: Apply jq transformation to temp file
+    jq '.hooks.UserPromptSubmit = [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/skill-activation-prompt.sh"
+          }
+        ]
+      }
+    ]' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
+
+    # Step 2: Validate temp file before replacing original
+    if jq empty "${TEMP_SETTINGS}" 2>/dev/null; then
+      # Validation passed - safe to replace original
+      mv "${TEMP_SETTINGS}" "${SETTINGS_FILE}"
+      changes_made=true
+      log "✓ Added UserPromptSubmit hook configuration"
+    else
+      # Validation failed - discard temp file, keep original
+      err "Failed to add UserPromptSubmit hook - JSON validation failed"
+      rm -f "${TEMP_SETTINGS}"
+      return 1
+    fi
+  elif [[ "${needs_skill_activation}" == "true" && "${has_skill_activation}" == "true" ]]; then
+    log "✓ UserPromptSubmit hook already configured"
+  fi
+
+  # -------------------------------------------------------------------------
+  # Atomic Update Pattern for PostToolUse Hook
+  # -------------------------------------------------------------------------
+  # Same safety pattern as above: validate before replacing original
+  # -------------------------------------------------------------------------
+  if [[ "${needs_post_tool_use}" == "true" && "${has_post_tool_use}" == "false" ]]; then
+    log "Adding PostToolUse hook configuration..."
+
+    # Step 1: Apply jq transformation to temp file
+    jq '.hooks.PostToolUse = [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-tool-use-tracker.sh"
+          }
+        ]
+      }
+    ]' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
+
+    # Step 2: Validate temp file before replacing original
+    if jq empty "${TEMP_SETTINGS}" 2>/dev/null; then
+      # Validation passed - safe to replace original
+      mv "${TEMP_SETTINGS}" "${SETTINGS_FILE}"
+      changes_made=true
+      log "✓ Added PostToolUse hook configuration"
+    else
+      # Validation failed - discard temp file, keep original
+      err "Failed to add PostToolUse hook - JSON validation failed"
+      rm -f "${TEMP_SETTINGS}"
+      return 1
+    fi
+  elif [[ "${needs_post_tool_use}" == "true" && "${has_post_tool_use}" == "true" ]]; then
+    log "✓ PostToolUse hook already configured"
+  fi
+
+  # Cleanup temp file (belt and suspenders - already cleaned in error paths)
+  rm -f "${TEMP_SETTINGS}"
+
+  # Report final status
+  if [[ "${changes_made}" == "true" ]]; then
+    log "✓ Updated settings.json with new hook configurations"
+  else
+    log "✓ settings.json already has all requested hook configurations"
+  fi
+
+  return 0
 }
 
 # Install hooks based on type
