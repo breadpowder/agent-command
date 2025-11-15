@@ -15,6 +15,7 @@ node_modules/
 .claude/hooks/
 .claude/skills/*
 !.claude/skills/skill-rules.json
+!.claude/skills/extract-style-guide-skill/
 .claude/tsc-cache/
 
 .claude/settings.json
