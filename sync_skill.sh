@@ -14,6 +14,7 @@ set -euo pipefail
 # Features:
 #   - Clones claude-code-infrastructure-showcase repository for latest hooks
 #   - Installs hook files to .claude/hooks/ directory
+#   - Copies skill-rules.json to .claude/skills/ directory (required for skill-activation-prompt hook)
 #   - Automatically configures .claude/settings.json (creates or updates)
 #   - Uses jq for safe JSON merging (falls back to manual instructions if jq unavailable)
 #   - Detects already-installed hooks and skips unnecessary operations
@@ -52,6 +53,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Features:"
       echo "  • Automatically installs hook files to .claude/hooks/"
+      echo "  • Copies skill-rules.json to .claude/skills/ (for skill activation)"
       echo "  • Automatically creates or updates .claude/settings.json"
       echo "  • Zero manual configuration when jq is installed"
       echo "  • Detects and skips already-installed hooks"
@@ -189,6 +191,24 @@ install_skill_activation_prompt() {
   if [[ -f "${TEMP_DIR}/.claude/hooks/package.json" ]]; then
     cp "${TEMP_DIR}/.claude/hooks/package.json" "${HOOKS_DIR}/"
     log "✓ Copied package.json"
+  fi
+
+  # Copy skill-rules.json to .claude/skills/ directory
+  SKILLS_DIR="${PROJECT_DIR}/.claude/skills"
+  mkdir -p "${SKILLS_DIR}"
+
+  if [[ -f "${TEMP_DIR}/.claude/skills/skill-rules.json" ]]; then
+    cp "${TEMP_DIR}/.claude/skills/skill-rules.json" "${SKILLS_DIR}/"
+    log "✓ Copied skill-rules.json"
+  else
+    warn "skill-rules.json not found in repository - creating minimal configuration"
+    cat > "${SKILLS_DIR}/skill-rules.json" <<'SKILL_RULES_EOF'
+{
+  "version": "1.0.0",
+  "skills": {}
+}
+SKILL_RULES_EOF
+    log "✓ Created minimal skill-rules.json"
   fi
 
   # Install npm dependencies
