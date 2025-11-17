@@ -11,7 +11,7 @@ IMPORTANT:
 3. You must compile the code and pass ALL tests before committing.
 4. **WORKFLOW CONTEXT EXCLUSION**: NEVER commit markdown files under `<project_root>/task_<name>/` directories (e.g., `task_auth/`, `task_bug-123/`) as these are local workflow context files
 5. **GITIGNORE MANAGEMENT**: Automatically update `.gitignore` to exclude workflow directories by adding pattern `task_*/` to ignore all task workspaces
-
+6. For any 3rd party libs. you must choose that is commercial friendly, i.e. MIT, Apache or BST License. GPL or similar MUST BE STRICTLY FORBITTED.
 ---
 
 ## Subagent Execution Strategy
