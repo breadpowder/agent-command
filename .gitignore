@@ -13,6 +13,7 @@ node_modules/
 # Claude Code synced resources (synced from external repos)
 .claude/agents/
 .claude/hooks/
+!.claude/hooks/user-prompt-logger.sh
 .claude/skills/*
 !.claude/skills/skill-rules.json
 !.claude/skills/extract-style-guide-skill/
