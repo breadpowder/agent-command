@@ -15,17 +15,24 @@ set -euo pipefail
 #   - Clones claude-code-infrastructure-showcase repository for latest hooks
 #   - Installs hook files to .claude/hooks/ directory
 #   - Copies skill-rules.json to .claude/skills/ directory (required for skill-activation-prompt hook)
+#   - Copies all skill directories from local agent_command repository to target project
 #   - Installs user-prompt-logger hook from local agent_command repository
 #   - Automatically configures .claude/settings.json (creates or updates)
 #   - Appends to existing hook arrays instead of replacing them (preserves custom hooks)
 #   - Uses jq for safe JSON merging (falls back to manual instructions if jq unavailable)
 #   - Detects already-installed hooks and skips unnecessary operations
+#   - Preserves existing skills in target project (no overwrites)
 #   - Zero manual configuration required when jq is installed
 #
 # Hooks Installed with 'all':
 #   - skill-activation-prompt: Suggests relevant skills based on user prompts
 #   - post-tool-use-tracker: Tracks file modifications
 #   - user-prompt-logger: Logs all user prompts to prompt-logs/ for analysis
+#
+# Skills Synced:
+#   - All skill directories from .claude/skills/ in agent_command repository
+#   - skill-rules.json configuration file
+#   - Existing skills in target project are preserved
 #
 # Requirements:
 #   - git (required)
@@ -66,8 +73,10 @@ while [[ $# -gt 0 ]]; do
       echo "Features:"
       echo "  • Automatically installs hook files to .claude/hooks/"
       echo "  • Copies skill-rules.json to .claude/skills/ (for skill activation)"
+      echo "  • Copies all skill directories from local repository to target"
       echo "  • Automatically creates or updates .claude/settings.json"
       echo "  • Appends to existing hooks without replacing them"
+      echo "  • Preserves existing skills in target project"
       echo "  • Zero manual configuration when jq is installed"
       echo "  • Detects and skips already-installed hooks"
       echo ""
@@ -222,6 +231,39 @@ install_skill_activation_prompt() {
 }
 SKILL_RULES_EOF
     log "✓ Created minimal skill-rules.json"
+  fi
+
+  # Copy skill directories from local agent_command repository
+  # Determine script directory to find local skills
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+  LOCAL_SKILLS_DIR="${SCRIPT_DIR}/.claude/skills"
+
+  if [[ -d "${LOCAL_SKILLS_DIR}" ]]; then
+    log "Checking for local skill directories to copy..."
+
+    # Find all directories in local skills (excluding . and ..)
+    for skill_dir in "${LOCAL_SKILLS_DIR}"/*/ ; do
+      if [[ -d "${skill_dir}" ]]; then
+        skill_name=$(basename "${skill_dir}")
+
+        # Skip if already exists in target
+        if [[ -d "${SKILLS_DIR}/${skill_name}" ]]; then
+          log "✓ ${skill_name} already exists in target"
+        else
+          # Copy the entire skill directory
+          cp -r "${skill_dir}" "${SKILLS_DIR}/"
+          log "✓ Copied skill: ${skill_name}"
+        fi
+      fi
+    done
+
+    # Also copy skill-rules.json from local repo if it exists (overwrite from TEMP_DIR)
+    if [[ -f "${LOCAL_SKILLS_DIR}/skill-rules.json" ]]; then
+      cp "${LOCAL_SKILLS_DIR}/skill-rules.json" "${SKILLS_DIR}/"
+      log "✓ Updated skill-rules.json from local repository"
+    fi
+  else
+    warn "Local skills directory not found: ${LOCAL_SKILLS_DIR}"
   fi
 
   # Install npm dependencies

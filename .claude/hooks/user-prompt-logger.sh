@@ -23,7 +23,7 @@ if [ -n "$USER_PROMPT" ]; then
     LOG_FILE="$LOG_DIR/$FILENAME"
 
     # Append prompt with simple timestamp format: hh:mm:ss <message>
-    echo "[$(date '+%H:%M:%S')] $USER_PROMPT" >> "$LOG_FILE"
+    echo "[$(date '+%H:%M:%S')] $USER_PROMPT\n" >> "$LOG_FILE"
 fi
 
 # Return JSON to allow the prompt to continue
