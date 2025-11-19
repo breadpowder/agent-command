@@ -19,3 +19,6 @@ node_modules/
 .claude/tsc-cache/
 
 .claude/settings.json
+
+# User prompt logs (local workflow tracking)
+prompt-logs/
