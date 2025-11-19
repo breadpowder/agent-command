@@ -15,10 +15,17 @@ set -euo pipefail
 #   - Clones claude-code-infrastructure-showcase repository for latest hooks
 #   - Installs hook files to .claude/hooks/ directory
 #   - Copies skill-rules.json to .claude/skills/ directory (required for skill-activation-prompt hook)
+#   - Installs user-prompt-logger hook from local agent_command repository
 #   - Automatically configures .claude/settings.json (creates or updates)
+#   - Appends to existing hook arrays instead of replacing them (preserves custom hooks)
 #   - Uses jq for safe JSON merging (falls back to manual instructions if jq unavailable)
 #   - Detects already-installed hooks and skips unnecessary operations
 #   - Zero manual configuration required when jq is installed
+#
+# Hooks Installed with 'all':
+#   - skill-activation-prompt: Suggests relevant skills based on user prompts
+#   - post-tool-use-tracker: Tracks file modifications
+#   - user-prompt-logger: Logs all user prompts to prompt-logs/ for analysis
 #
 # Requirements:
 #   - git (required)
@@ -49,12 +56,18 @@ while [[ $# -gt 0 ]]; do
       echo "Hook Types:"
       echo "  skill-activation-prompt    UserPromptSubmit hook for skill suggestions"
       echo "  post-tool-use-tracker      PostToolUse hook for file modification tracking"
-      echo "  all                        Install both hooks (default)"
+      echo "  all                        Install all hooks (default)"
+      echo ""
+      echo "Hooks Installed with 'all':"
+      echo "  • skill-activation-prompt  - Suggests relevant skills based on user prompts"
+      echo "  • post-tool-use-tracker    - Tracks file modifications"
+      echo "  • user-prompt-logger       - Logs all user prompts for analysis"
       echo ""
       echo "Features:"
       echo "  • Automatically installs hook files to .claude/hooks/"
       echo "  • Copies skill-rules.json to .claude/skills/ (for skill activation)"
       echo "  • Automatically creates or updates .claude/settings.json"
+      echo "  • Appends to existing hooks without replacing them"
       echo "  • Zero manual configuration when jq is installed"
       echo "  • Detects and skips already-installed hooks"
       echo ""
@@ -258,6 +271,34 @@ install_post_tool_use_tracker() {
   return 0
 }
 
+# Function to install user-prompt-logger hook
+install_user_prompt_logger() {
+  log "Installing user-prompt-logger hook..."
+
+  # Check if already installed
+  if [[ -f "${HOOKS_DIR}/user-prompt-logger.sh" ]]; then
+    log "✓ user-prompt-logger already installed"
+    return 0
+  fi
+
+  # Determine script directory to find the hook source
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+
+  # Copy hook file from local .claude/hooks directory
+  if [[ -f "${SCRIPT_DIR}/.claude/hooks/user-prompt-logger.sh" ]]; then
+    cp "${SCRIPT_DIR}/.claude/hooks/user-prompt-logger.sh" "${HOOKS_DIR}/"
+    chmod +x "${HOOKS_DIR}/user-prompt-logger.sh"
+    log "✓ Copied user-prompt-logger.sh from local repository"
+  else
+    warn "user-prompt-logger.sh not found in ${SCRIPT_DIR}/.claude/hooks/"
+    warn "Skipping user-prompt-logger installation"
+    return 1
+  fi
+
+  log "✓ user-prompt-logger hook installed"
+  return 0
+}
+
 # ============================================================================
 # Hook Existence Detection Function
 # ============================================================================
@@ -331,6 +372,7 @@ hook_exists_in_settings() {
 # Parameters:
 #   $1 - needs_skill_activation: "true" if skill-activation-prompt should be added
 #   $2 - needs_post_tool_use: "true" if post-tool-use-tracker should be added
+#   $3 - needs_user_prompt_logger: "true" if user-prompt-logger should be added
 #
 # Safety Mechanisms:
 #   1. Requires jq for all operations (no fallback to prevent corruption)
@@ -342,6 +384,7 @@ hook_exists_in_settings() {
 # Workflow:
 #   - If file doesn't exist: Create new with required hooks
 #   - If file exists: Detect existing hooks → Add only missing ones
+#   - APPENDS to existing hook arrays instead of replacing them
 #
 # Returns:
 #   0 - Success (file created or updated)
@@ -350,6 +393,7 @@ hook_exists_in_settings() {
 update_settings_json() {
   local needs_skill_activation=$1
   local needs_post_tool_use=$2
+  local needs_user_prompt_logger=${3:-"false"}
 
   # -------------------------------------------------------------------------
   # Requirement: jq is mandatory for safe JSON operations
@@ -490,21 +534,29 @@ SETTINGS_EOF
   # -------------------------------------------------------------------------
   # Pattern: Original → jq transform → Temp file → Validate → Replace
   # If validation fails: Discard temp file, keep original (no data loss)
+  #
+  # IMPORTANT: This appends to existing hooks array instead of replacing
   # -------------------------------------------------------------------------
   if [[ "${needs_skill_activation}" == "true" && "${has_skill_activation}" == "false" ]]; then
     log "Adding UserPromptSubmit hook configuration..."
 
     # Step 1: Apply jq transformation to temp file
-    jq '.hooks.UserPromptSubmit = [
-      {
-        "hooks": [
-          {
+    # Check if UserPromptSubmit exists, if not create structure, if yes append to hooks array
+    jq '
+      if .hooks.UserPromptSubmit then
+        .hooks.UserPromptSubmit[0].hooks += [{
+          "type": "command",
+          "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/skill-activation-prompt.sh"
+        }]
+      else
+        .hooks.UserPromptSubmit = [{
+          "hooks": [{
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/skill-activation-prompt.sh"
-          }
-        ]
-      }
-    ]' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
+          }]
+        }]
+      end
+    ' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
 
     # Step 2: Validate temp file before replacing original
     if jq empty "${TEMP_SETTINGS}" 2>/dev/null; then
@@ -520,6 +572,50 @@ SETTINGS_EOF
     fi
   elif [[ "${needs_skill_activation}" == "true" && "${has_skill_activation}" == "true" ]]; then
     log "✓ UserPromptSubmit hook already configured"
+  fi
+
+  # -------------------------------------------------------------------------
+  # Atomic Update Pattern for User Prompt Logger Hook
+  # -------------------------------------------------------------------------
+  # Add user-prompt-logger to UserPromptSubmit hooks array
+  # -------------------------------------------------------------------------
+  local has_user_prompt_logger=$(hook_exists_in_settings "UserPromptSubmit" "user-prompt-logger.sh")
+
+  if [[ "${needs_user_prompt_logger}" == "true" && "${has_user_prompt_logger}" == "false" ]]; then
+    log "Adding user-prompt-logger hook configuration..."
+
+    # Step 1: Apply jq transformation to temp file
+    # Append to existing hooks array or create structure if doesn't exist
+    jq '
+      if .hooks.UserPromptSubmit then
+        .hooks.UserPromptSubmit[0].hooks += [{
+          "type": "command",
+          "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/user-prompt-logger.sh"
+        }]
+      else
+        .hooks.UserPromptSubmit = [{
+          "hooks": [{
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/user-prompt-logger.sh"
+          }]
+        }]
+      end
+    ' "${SETTINGS_FILE}" > "${TEMP_SETTINGS}"
+
+    # Step 2: Validate temp file before replacing original
+    if jq empty "${TEMP_SETTINGS}" 2>/dev/null; then
+      # Validation passed - safe to replace original
+      mv "${TEMP_SETTINGS}" "${SETTINGS_FILE}"
+      changes_made=true
+      log "✓ Added user-prompt-logger hook configuration"
+    else
+      # Validation failed - discard temp file, keep original
+      err "Failed to add user-prompt-logger hook - JSON validation failed"
+      rm -f "${TEMP_SETTINGS}"
+      return 1
+    fi
+  elif [[ "${needs_user_prompt_logger}" == "true" && "${has_user_prompt_logger}" == "true" ]]; then
+    log "✓ user-prompt-logger hook already configured"
   fi
 
   # -------------------------------------------------------------------------
@@ -580,17 +676,18 @@ case "${HOOK_TYPE}" in
     if ! install_skill_activation_prompt; then
       INSTALL_SUCCESS=false
     fi
-    update_settings_json "true" "false"
+    update_settings_json "true" "false" "false"
     ;;
   post-tool-use-tracker)
     if ! install_post_tool_use_tracker; then
       INSTALL_SUCCESS=false
     fi
-    update_settings_json "false" "true"
+    update_settings_json "false" "true" "false"
     ;;
   all)
     SKILL_SUCCESS=true
     POST_SUCCESS=true
+    LOGGER_SUCCESS=true
 
     if ! install_skill_activation_prompt; then
       SKILL_SUCCESS=false
@@ -602,7 +699,14 @@ case "${HOOK_TYPE}" in
       INSTALL_SUCCESS=false
     fi
 
-    update_settings_json "${SKILL_SUCCESS}" "${POST_SUCCESS}"
+    # Always try to install user-prompt-logger
+    if ! install_user_prompt_logger; then
+      LOGGER_SUCCESS=false
+      # Don't fail the entire installation if user-prompt-logger fails
+      warn "user-prompt-logger installation failed, continuing with other hooks"
+    fi
+
+    update_settings_json "${SKILL_SUCCESS}" "${POST_SUCCESS}" "${LOGGER_SUCCESS}"
     ;;
 esac
 
