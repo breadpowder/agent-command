@@ -201,3 +201,6 @@ echo '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command"
 - **Missing required output fields**: Ensure all required fields are present in hook responses
 - **Global configuration syntax errors**: JSON syntax errors break all settings
 - **Permission issues**: Ensure hook scripts are executable (`chmod +x`)
+
+
+### When you commit to repo, your message must be one line, no bullet point. Never metion Claude as coauthor
