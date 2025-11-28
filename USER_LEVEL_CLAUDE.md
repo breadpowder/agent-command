@@ -525,4 +525,8 @@ NEVER use grep for project-wide searches (slow, ignores .gitignore). ALWAYS use 
 If changes.md file document file exists, always  maintain this file as tracking log for what has been done what steps has been done and what has to be verify or has been verified for current and next steps to mark. I don't need pseudocode, you can refer to files, but we don't need pseudocode. alayws update the file before you commit codes.
 
  Use playwright-skill for UI and Web testing/debug for screenshot and UI behavrior annd MUST NOT use Browsermcp.
+- For file path in any code, always use relative path to the script not absolute path because the project MUST BE run from other machines. e.g. SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)" LOG_FILE="${PROJECT_ROOT}/logs/agent.log"
 
+
+### When you commit to repo, your message must be one line, no bullet point. Never metion Claude as coauthor
