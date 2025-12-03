@@ -6,11 +6,20 @@
 - Context7 references are highly recommended; use them only when you need to refer to or verify APIs.
 
 ## Purpose
-Specialized feature implementation that turns a plan into code. This spec defines the
-prompting and collaboration model; it does not auto‑run a workflow. Clarification‑first:
-reflect user intent, bundle clarifying questions, wait for confirmation, and record
-assumptions as “unconfirmed”. Focus on backward compatibility. Use Context7 to validate
+Specialized feature implementation that turns a plan into code using **Test-Driven Development (TDD)**.
+This spec defines the prompting and collaboration model; it does not auto‑run a workflow.
+Clarification‑first: reflect user intent, bundle clarifying questions, wait for confirmation,
+and record assumptions as "unconfirmed". Focus on backward compatibility. Use Context7 to validate
 APIs/configs during coding.
+
+## TDD Mandate (Red-Green-Refactor)
+Must follow tasks.md TDD step by step. If there is no TDD for a task, convert to TDD first.
+
+**Status Update Requirement**: After completing EACH task:
+- You MUST update `task_<name>/implementation/status.md` immediately
+- Record: task ID, TDD phase completed, test results, acceptance criteria status
+- Mark acceptance criteria as VERIFIED only when behavior tests pass
+- Never proceed to next task without status update
 
 ## Prompt template
 - Use a reveal‑gated cadence: after each subtask is completed and self‑verified,
@@ -41,7 +50,8 @@ I can run to confirm results (and expected outputs). Then wait for me to say
 
 ## Status logging
 - Location: `task_<name>/implementation/status.md`
-- Purpose: traceable subtask progress and verification notes.
+- Purpose: traceable subtask progress, TDD cycle tracking, and verification notes.
+- **MANDATORY**: Update status.md IMMEDIATELY after each task completion - never batch updates.
 - Tie each entry back to the planning artifact (`tasks.md` task id, expected behavior, guardrail notes) so every commit links to the originating spec item.
 - Capture evidence pointers: link Playwright screenshots/videos or API request/response logs that prove the expected behavior.
 - Suggested log snippet:
@@ -136,12 +146,44 @@ Per-task atomic commits
 - Create a feature branch from the correct base and follow naming conventions
   (`feature/<name>` or `feat/<ticket>`). Commit incrementally and atomically.
 
-### Implementation steps
-Follow the vetted plan-first AI breakdown. For each numbered step, reference the corresponding task id, guardrails, and expected behaviors, then log completion details (observed behavior, tests, commit) before proceeding.
+### Implementation steps (TDD-Driven)
+Follow the vetted plan-first AI breakdown. **For EACH task, execute the full TDD cycle before proceeding.**
+
+**Per-Task TDD Workflow:**
+```
+1. READ acceptance criteria from tasks.md
+2. RED: Write failing tests that verify acceptance criteria
+3. RUN tests → confirm they FAIL (document in status.md)
+4. GREEN: Write minimal code to pass tests
+5. RUN tests → confirm they PASS (document in status.md)
+6. REFACTOR: Improve code while tests stay green
+7. VERIFY: Run behavior tests to confirm acceptance criteria
+8. UPDATE status.md with TDD cycle completion and verification
+9. COMMIT with message referencing task ID
+10. PROCEED to next task only after all above complete
+```
+
+**Implementation Areas (apply TDD to each):**
 1. **Foundation with Context7 Guidance**: Data models, interfaces, configuration scaffolding using current framework patterns from Context7 documentation.
+   - RED: Test model validation, interface contracts
+   - GREEN: Implement models/interfaces
+   - REFACTOR: Optimize structure
+
 2. **Business logic**: Core functionality behind feature flags where appropriate, implementing pseudocode patterns with Context7-informed best practices.
+   - RED: Test business rules, edge cases, error handling
+   - GREEN: Implement logic to pass tests
+   - REFACTOR: Extract helpers, improve clarity
+
 3. **API/surface**: Endpoints, handlers, UI components, or CLIs as applicable, following current API design patterns from documentation.
+   - RED: Test endpoints (status codes, payloads, error responses)
+   - GREEN: Implement handlers
+   - REFACTOR: Improve response handling
+
 4. **Integration**: Connect to dependencies and existing modules using Context7-documented integration patterns and compatibility guidelines.
+   - RED: Test integration points, data flow
+   - GREEN: Implement connections
+   - REFACTOR: Improve error propagation
+
 5. **Observability**: Add logging, metrics, traces with SLO tracking following framework-specific observability patterns.
 6. **Backward compatibility**: API versioning, schema evolution, migration safety using documented migration strategies.
 7. **Edge cases and failure modes**: Timeouts, retries, idempotency, partial failures following framework error handling patterns.
@@ -193,12 +235,18 @@ Follow the vetted plan-first AI breakdown. For each numbered step, reference the
 - Security validations: input sanitization, auth/authz, secrets management
 - Performance considerations: no hotspots, resource-conscious design
 
-**Test Strategy Integration:**
-- Unit tests for business logic with clear isolation
-- Integration tests for API endpoints and data flows  
-- E2E tests for critical user paths and acceptance criteria
-- Performance smoke tests with budget enforcement
-- Security tests for auth, input validation, and data protection
+**Test Strategy Integration (TDD-Aligned):**
+- **Integration tests**: Written FIRST for API endpoints and data flows before implementation
+- **Behavior tests**: Map directly to acceptance criteria - must pass before task completion
+- **E2E tests**: For critical user paths, verifying end-to-end acceptance criteria
+- **Performance smoke tests**: With budget enforcement
+- **Security tests**: For auth, input validation, and data protection
+
+**Acceptance Criteria Verification Protocol:**
+- Each acceptance criterion MUST have at least one corresponding test
+- Tests MUST be written BEFORE implementation (TDD RED phase)
+- Criterion is VERIFIED only when its behavior test passes
+- Document verification in status.md with test evidence
 
 ## Outputs
 - Implemented code and configuration on a feature branch
