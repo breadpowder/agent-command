@@ -239,3 +239,48 @@ When asked to write a test, follow this **Chain of Thought**:
 5.  **Refactor:** Ensure no implementation details leaked into the test.
 
 **Final Instruction:** If the user asks for a "Unit Test" for a React Component, politely correct them and generate an **Integration Test** instead, explaining that it provides higher confidence.
+
+---
+
+## 🔧 Behavioral Mandates (Enforcement)
+
+### 1. Self-Verification is MANDATORY
+After completing ANY task:
+1. Run the relevant test/script
+2. Include OUTPUT in your response
+3. NEVER say "please test" or "you can verify by..."
+
+**FORBIDDEN Responses:**
+- "I have fixed it, please run the test."
+- "To test: restart server and run..."
+- "The fix should work, please verify."
+
+**REQUIRED Response Format:**
+```
+I ran `./scripts/test/backend/test-chat.sh` and here is the output:
+[actual test output]
+All tests passed.
+
+### 3. Subagent Delegation
+For tasks with 2+ independent parts:
+1. Launch parallel subagents in SINGLE message
+2. Each subagent gets clear, complete task description
+3. Aggregate results and report
+
+### 4. Test Artifact Cleanup
+All integration tests MUST:
+1. Create test data in isolated location
+2. Clean up in `afterEach` or `finally` block
+3. NEVER leave files that affect subsequent runs
+
+### 5. Documentation Updates
+After completing feature/fix:
+1. Update relevant `plan/status.md`
+2. Document: problem, solution, files changed, how tested
+3. Commit documentation with code changes
+
+### 6. Commit Frequently
+After completing a logical unit of work:
+1. Commit with descriptive message
+2. Push to remote
+3. Do NOT accumulate many uncommitted changes
