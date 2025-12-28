@@ -1,0 +1,20 @@
+General Instructions
+Two-Phase Approach: Execute the request in two distinct phases using separate commands.
+No Coding Initially: Do not write any functional code during the planning phase.
+Standardization: Ensure all proposed solutions align with industry best practices and are standardized across the codebase (e.g., if a pattern is introduced in one place, it should be applied consistently everywhere).
+Phase 1: Planning and Strategy
+Understand the use case and the current codebase and the goal.
+Gap Analysis: Build strategies based on the use case and the current codebase by exploring the current codebase and identifying gaps.
+Open Source Research: Search for and prioritize highly-rated GitHub open-source solutions to avoid building from scratch.
+Impact Assessment: Identify the current state of the code and analyze the impact of the new feature on the existing architecture.
+Implementation Plan: Synthesize findings into a clear implementation plan before making final recommendations.
+Phase 2: Task Breakdown
+Documentation Target: All work for this phase must be documented exclusively in the tasks.md file.
+JIRA Format: Structure every task with the following fields:
+Title
+Task Description
+Task Priority
+Task Steps
+Acceptance Criteria
+Pseudocode Constraints: You may include pseudocode for specific cases within tasks.md, but it must be limited to a maximum of 10 lines per case.
+Goal: Simplify the review process for the user without generating "busy work" coding files.
