@@ -45,11 +45,25 @@ This command creates commits at key checkpoints for traceability:
 - `git commit -m "sdlc: <name> - strategy complete"`
 - Rollback: use `git revert <commit_hash>` (never `git reset`).
 
+## Prerequisites - Optional Inputs from `sdlc_prd_feature`
+
+If PRD phase was completed, read these specs as input context:
+
+| File | Purpose | Required |
+|------|---------|----------|
+| `task_<name>/specs/feature-spec.md` | PRD: user requirements and value | Optional |
+| `task_<name>/specs/user-stories.md` | User stories and acceptance criteria | Optional |
+| `task_<name>/specs/business-case.md` | Business justification and metrics | Optional |
+
+**Note**: If specs don't exist, this command can still run - it will gather requirements directly from user input or `--context` files.
+
 ## Outputs
 - `task_<name>/plan/status.md` - Running log of planning activities (planning only), approvals, and outstanding guardrails
 - `task_<name>/plan/decision-log.md` - Options, pros/cons, decisions with rationale
 - `task_<name>/plan/strategy/architecture.md` - ASCII diagrams for component control and data flow
 - `task_<name>/plan/strategy/implementation_plan.md` - **PRIMARY OUTPUT**: Implementation plan with integration contracts (critical for user review)
+
+**Note**: Integration contracts in `implementation_plan.md` include API endpoints, data contracts, component specs - these are the technical specs derived from user requirements.
 
 ---
 

@@ -22,6 +22,29 @@
     * **Gitignore**: Automatically update `.gitignore` to include `task_*/`.
 7.  **FILE PATHS**: Always use **relative paths** (e.g., `SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"`). Never use absolute paths.
 8.  **UI TESTING**: Use **playwright-skill** for UI behavior/screenshots. **DO NOT** use Browsermcp.
+9.  **NO CODE IN PLANNING DOCUMENTS**: Planning files (`tasks.md`, `strategy.md`, `implementation_plan.md`) must contain **NO functional code**. Only `tasks_details.md` may contain pseudocode (max 10 lines per task).
+
+    **Anti-Pattern (Code in planning files):**
+    ```markdown
+    ## TASK-001: Create User Service
+    ### Implementation
+    ```python
+    class UserService:
+        def create_user(self, data):
+            validated = self.validate(data)
+            return self.repo.save(validated)
+    ```
+    ```
+
+    **Correct Pattern (Reference only):**
+    ```markdown
+    ## TASK-001: Create User Service
+    ### Implementation Reference
+    - File to create: `services/user_service.py`
+    - Class: `UserService`
+    - Method: `create_user(data) -> User`
+    - See `tasks_details.md` for pseudocode if complex
+    ```
 
 
 ## 🔄 SDLC & Workflow
@@ -69,7 +92,16 @@ graph TD
   * **Format**: `sdlc: <action> <scope> - <summary>`
       * *Ex:* `sdlc: implement feature auth - add jwt token support`
   * **Constraint**: Message must be **ONE LINE**. No bullet points.
-  * **Constraint**: Never mention "Claude" or "AI" as co-author.
+  * **Constraint**: for commit message Never mention "Claude" or "AI" as co-author. Wrong pattern:
+    ```
+    sdlc: implement feature auth
+    Co-authored-by: Claude <claude@anthropic.com>
+    ```
+    
+    Correct pattern:
+    ```
+    sdlc: implement feature auth - add jwt token support
+    ```
 
 
 ## 🐍 Python Development Standards (Backend)
@@ -254,12 +286,39 @@ After completing ANY task:
 - "I have fixed it, please run the test."
 - "To test: restart server and run..."
 - "The fix should work, please verify."
+- "Now test the server. You need to restart your integration server..."
+- "Summary of fix: ... To test: ..."
 
 **REQUIRED Response Format:**
 ```
 I ran `./scripts/test/backend/test-chat.sh` and here is the output:
 [actual test output]
 All tests passed.
+```
+
+**Few-Shot Examples:**
+
+**🔴 BAD (Asks user to verify):**
+```
+I've updated the authentication logic. To verify:
+1. Restart the server
+2. Run `npm test`
+3. Check that login works
+```
+
+**🟢 GOOD (Self-verified with output):**
+```
+I updated the authentication logic and verified it works:
+
+$ npm run test:auth
+PASS  tests/auth.spec.ts
+  ✓ login with valid credentials (45ms)
+  ✓ reject invalid password (12ms)
+  ✓ handle expired tokens (8ms)
+
+3 tests passed.
+
+The fix is complete and verified.
 
 ### 3. Subagent Delegation
 For tasks with 2+ independent parts:

@@ -67,21 +67,18 @@ This command creates commits at key checkpoints for traceability:
 - **Business Case Analysis**: ROI calculations, success metrics, risk assessment
 
 ### 2. Context storage (user-focused outputs)
-Store all PRD artifacts under the single `specs/` folder within the task workspace. Create files
-ONLY if applicable (e.g., for non-API features, skip `api-contract.yaml`).
+Store all PRD artifacts under the single `specs/` folder within the task workspace.
 ```
 <project_root>/task_<name>/
 - specs/
   - feature-spec.md         # PRD: user requirements and value
   - user-stories.md         # Detailed user stories and acceptance criteria
   - business-case.md        # Business justification and success metrics
-  - api-contract.yaml       # OpenAPI spec (if applicable)
-  - acceptance-tests.json   # Structured acceptance criteria
-  - observability.yaml      # Metrics, alerts, dashboards, SLOs
-  - rollout-config.yaml     # Feature flags, gating checks, backout steps
 - context/
-  - source-reference.md     # Original source context and links
+  - source-reference.md     # Original source context and links (optional)
 ```
+
+**Note**: API contracts, acceptance tests, and observability specs are outputs of `sdlc_plan_first`, not PRD.
 
 **IMPORTANT**: PRD artifacts must be written to `<project_root>/task_<name>/specs/`.
 
@@ -214,13 +211,12 @@ The `prd/feature-spec.md` file should include:
 - Spec lint: ensure guardrails, assumption register, and agent handoff checklist sections are populated before plan-first tooling consumes the spec
 
 ## Outputs
-- `task_<name>/specs/feature-spec.md`
-- `task_<name>/specs/user-stories.md`
-- `task_<name>/specs/business-case.md`
-- Optional: `task_<name>/specs/*` (api-contract.yaml, acceptance-tests.json, etc.)
-- Performance smoke tests with budget thresholds enforced
-- Security checks: dependency scan, secrets scan, container hardening
-- Observability existence check: required metrics/alerts present
+- `task_<name>/specs/feature-spec.md` - PRD: user requirements and value
+- `task_<name>/specs/user-stories.md` - Detailed user stories and acceptance criteria
+- `task_<name>/specs/business-case.md` - Business justification and success metrics
+- Optional: `task_<name>/context/source-reference.md` - Original source context
+
+**Note**: API contracts, observability specs, and rollout configs are created by `sdlc_plan_first`, not this command.
 
 ## 🔹 TEST
 

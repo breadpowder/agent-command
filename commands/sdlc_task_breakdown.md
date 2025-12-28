@@ -49,10 +49,11 @@ This command creates commits at key checkpoints for traceability:
 
 ## 🔹 PHASE 2: TASK BREAKDOWN
 
-### Prerequisites - Phase 1 Outputs Required
+### Prerequisites - Phase 1 & Review Outputs Required
 
-Before running this command, verify these Phase 1 outputs exist:
+Before running this command, verify these outputs exist:
 
+**From `sdlc_plan_first` (Phase 1)**:
 | File | Purpose | Required |
 |------|---------|----------|
 | `task_<name>/plan/status.md` | Running log of planning activities | Yes |
@@ -60,13 +61,33 @@ Before running this command, verify these Phase 1 outputs exist:
 | `task_<name>/plan/strategy/architecture.md` | Component diagrams and data flow | Yes |
 | `task_<name>/plan/strategy/implementation_plan.md` | **PRIMARY**: Integration contracts and feature details | Yes |
 
-If missing, run `sdlc_plan_first --name <name>` first.
+**From `sdlc_review_plan` (Review Gate)**:
+| File | Purpose | Required |
+|------|---------|----------|
+| `task_<name>/plan/review/review-report.md` | Review verdict, proposed updates, deletion approvals | Yes |
+
+**Workflow Order**:
+```
+sdlc_prd_feature → sdlc_plan_first → sdlc_review_plan → sdlc_task_breakdown
+```
+
+If missing, run upstream commands first:
+```bash
+sdlc_plan_first --name <name>    # Create implementation plan
+sdlc_review_plan --name <name>   # Review and approve plan
+```
+
+**IMPORTANT**: Task breakdown should only proceed if review verdict is 🟢 Approved or 🟡 Concerns (with user acknowledgment). Do NOT proceed if 🔴 Blocked.
 
 ---
 
-### Step 1: Read Phase 1 Context
+### Step 1: Read Phase 1 & Review Context
 
 **Activities**:
+- Read `task_<name>/plan/review/review-report.md` for:
+  - **Review verdict** (must be 🟢 Approved or 🟡 Concerns acknowledged)
+  - **Proposed file updates** (Section 6) - ensure these were applied to input files
+  - **Approved deletion candidates** (Section 6.5) - these become cleanup tasks
 - Read `task_<name>/plan/strategy/implementation_plan.md` for:
   - Problem statement and goals
   - Feature planning details
@@ -80,6 +101,11 @@ If missing, run `sdlc_plan_first --name <name>` first.
   - Technology choices and rationale
   - Alternatives considered
 - Note dependencies and integration points from contracts
+
+**Review Report Validation**:
+| Check | Action if Failed |
+|-------|------------------|
+| Verdict is 🔴 Blocked | STOP - return to `sdlc_plan_first` to fix issues |
 
 ---
 
@@ -336,6 +362,14 @@ Within each dependency level, order by risk:
 ## Definition of Ready for Implementation
 
 Before proceeding to `sdlc_implement_feature`, verify:
+
+**Review Gate (from `sdlc_review_plan`)**:
+- [ ] Review verdict is 🟢 Approved or 🟡 Concerns (acknowledged)
+- [ ] Proposed file updates (Section 6) applied to input files
+- [ ] All deletion candidates approved, rejected, or deferred
+- [ ] Deletion tasks created for approved candidates
+
+**Phase 1 & 2 Artifacts**:
 - [ ] All Phase 1 artifacts read and understood
 - [ ] All tasks in JIRA format in `tasks.md`
 - [ ] Each task ≤2 hours estimated
@@ -378,6 +412,43 @@ Before finalizing, verify all contracts from `implementation_plan.md` are covere
 | Component Specs | 4.3 | TASK-xxx, TASK-xxx |
 | User Input Specs | 4.4 | TASK-xxx, TASK-xxx |
 | Data Models | 5 | TASK-xxx, TASK-xxx |
+
+---
+
+## Deletion/Cleanup Tasks (From Review Report)
+
+For each **approved** deletion candidate from `review-report.md` Section 6.5, create a cleanup task:
+
+```markdown
+## TASK-XXX: Remove deprecated <component>
+
+### Task Description
+Remove outdated component that has been replaced by new implementation.
+Approved in plan review on <date>.
+
+### Task Priority
+**Priority**: P3 (Low) - Execute AFTER new implementation is verified
+
+### Dependencies
+- **Blocked By**: TASK-xxx (new replacement must be deployed first)
+- **Blocks**: None
+
+### Task Steps
+1. Verify new replacement is deployed and working
+2. Search for remaining references to old component
+3. Update/remove references found
+4. Delete the deprecated file(s)
+5. Run full test suite to verify no regressions
+6. Update documentation to remove old references
+
+### Acceptance Criteria
+- [ ] AC1: New replacement is verified working in production
+- [ ] AC2: No remaining imports/references to old component
+- [ ] AC3: All tests pass after deletion
+- [ ] AC4: Documentation updated
+```
+
+**IMPORTANT**: Deletion tasks should be scheduled AFTER the new implementation tasks are complete and verified.
 
 ---
 
