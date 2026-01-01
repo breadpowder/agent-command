@@ -17,6 +17,10 @@ node_modules/
 .claude/skills/*
 !.claude/skills/skill-rules.json
 !.claude/skills/extract-style-guide-skill/
+!.claude/skills/pptx/
+!.claude/skills/skill-creator/
+!.claude/skills/mcp-builder/
+!.claude/skills/xlsx/
 .claude/tsc-cache/
 
 .claude/settings.json

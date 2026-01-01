@@ -2,6 +2,145 @@
   "version": "1.0",
   "description": "Skill activation triggers for Claude Code. Controls when skills automatically suggest or block actions.",
   "skills": {
+      "pptx": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Create, edit, and analyze PowerPoint presentations (.pptx files)",
+          "promptTriggers": {
+              "keywords": [
+                  "powerpoint",
+                  "pptx",
+                  "presentation",
+                  "slides",
+                  "slide deck",
+                  "create presentation",
+                  "edit presentation",
+                  "add slide",
+                  "presentation template",
+                  "speaker notes",
+                  "slide layout"
+              ],
+              "intentPatterns": [
+                  "(create|make|build|generate).*?(presentation|slides|pptx|powerpoint)",
+                  "(edit|modify|update).*?(presentation|slides|pptx|powerpoint)",
+                  "(add|insert).*?(slide|image|chart).*?(presentation|pptx)",
+                  "(convert|export).*?(to|as).*?(pptx|powerpoint|presentation)",
+                  "html.*?to.*?(pptx|powerpoint|slides)"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  "**/*.pptx",
+                  "**/presentations/**/*",
+                  "**/slides/**/*"
+              ]
+          }
+      },
+      "skill-creator": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Create and package new Claude Code skills with proper structure and validation",
+          "promptTriggers": {
+              "keywords": [
+                  "create skill",
+                  "new skill",
+                  "build skill",
+                  "package skill",
+                  "skill template",
+                  "skill structure",
+                  "SKILL.md",
+                  "skill validation",
+                  "publish skill",
+                  "skill development"
+              ],
+              "intentPatterns": [
+                  "(create|make|build|develop).*?(new|a|custom).*?skill",
+                  "(package|publish|distribute).*?skill",
+                  "(validate|check|verify).*?skill.*?(structure|format)",
+                  "how.*?(create|make|build).*?skill",
+                  "skill.*?(template|boilerplate|scaffold)"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  ".claude/skills/**/SKILL.md",
+                  "**/skills/**/SKILL.md"
+              ]
+          }
+      },
+      "mcp-builder": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Build MCP (Model Context Protocol) servers in Python or Node.js with best practices",
+          "promptTriggers": {
+              "keywords": [
+                  "mcp server",
+                  "mcp tool",
+                  "model context protocol",
+                  "create mcp",
+                  "build mcp",
+                  "fastmcp",
+                  "mcp sdk",
+                  "mcp integration",
+                  "mcp resource",
+                  "mcp prompt"
+              ],
+              "intentPatterns": [
+                  "(create|build|make|develop).*?mcp.*?(server|tool)",
+                  "(implement|add).*?mcp.*?(integration|connection)",
+                  "mcp.*?(best practices|patterns|guide)",
+                  "(python|node|typescript).*?mcp.*?server",
+                  "how.*?(create|build).*?mcp"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  "**/mcp/**/*.py",
+                  "**/mcp/**/*.ts",
+                  "**/mcp-server/**/*",
+                  "**/*mcp*.py",
+                  "**/*mcp*.ts"
+              ]
+          }
+      },
+      "xlsx": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Create, edit, and manipulate Excel spreadsheets (.xlsx files) with formula support",
+          "promptTriggers": {
+              "keywords": [
+                  "excel",
+                  "xlsx",
+                  "spreadsheet",
+                  "workbook",
+                  "worksheet",
+                  "excel formula",
+                  "excel chart",
+                  "pivot table",
+                  "excel template",
+                  "csv to excel"
+              ],
+              "intentPatterns": [
+                  "(create|make|build|generate).*?(excel|xlsx|spreadsheet|workbook)",
+                  "(edit|modify|update).*?(excel|xlsx|spreadsheet)",
+                  "(add|insert).*?(formula|chart|pivot).*?(excel|xlsx)",
+                  "(convert|export).*?(to|as).*?(xlsx|excel)",
+                  "(read|parse|extract).*?(excel|xlsx|spreadsheet)"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  "**/*.xlsx",
+                  "**/*.xls",
+                  "**/spreadsheets/**/*",
+                  "**/excel/**/*"
+              ]
+          }
+      },
       "skill-developer": {
           "type": "domain",
           "enforcement": "suggest",
