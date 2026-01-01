@@ -174,15 +174,53 @@ if ! git clone --depth 1 --quiet "https://github.com/breadpowder/claude-code-inf
   exit 1
 fi
 
+# Function to sync skills (skill-rules.json + skill directories)
+# Always overwrites ENTIRE skills directory to ensure:
+# 1. Projects have the most recent code
+# 2. Outdated/removed skills are deleted from destination
+sync_skills() {
+  log "Syncing skills to project..."
+
+  # Determine script directory to find local skills
+  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+  LOCAL_SKILLS_DIR="${SCRIPT_DIR}/.claude/skills"
+
+  SKILLS_DIR="${PROJECT_DIR}/.claude/skills"
+
+  if [[ -d "${LOCAL_SKILLS_DIR}" ]]; then
+    # Wipe entire skills directory and recreate from source
+    # This ensures outdated skills are removed
+    log "Replacing entire skills directory..."
+    rm -rf "${SKILLS_DIR}"
+    mkdir -p "${SKILLS_DIR}"
+
+    # Copy all contents from source
+    cp -r "${LOCAL_SKILLS_DIR}/"* "${SKILLS_DIR}/"
+
+    # Log what was synced
+    for skill_dir in "${SKILLS_DIR}"/*/ ; do
+      if [[ -d "${skill_dir}" ]]; then
+        skill_name=$(basename "${skill_dir}")
+        log "✓ Synced skill: ${skill_name}"
+      fi
+    done
+
+    if [[ -f "${SKILLS_DIR}/skill-rules.json" ]]; then
+      log "✓ Synced skill-rules.json"
+    fi
+  else
+    warn "Local skills directory not found: ${LOCAL_SKILLS_DIR}"
+    return 1
+  fi
+
+  log "✓ Skills sync complete"
+  return 0
+}
+
 # Function to install skill-activation-prompt hook
+# Always overwrites to ensure projects have the most recent code
 install_skill_activation_prompt() {
   log "Installing skill-activation-prompt hook..."
-
-  # Check if already installed
-  if [[ -f "${HOOKS_DIR}/skill-activation-prompt.sh" ]]; then
-    log "✓ skill-activation-prompt already installed"
-    return 0
-  fi
 
   # Check if npm is available (required for this hook)
   if ! command -v npm >/dev/null 2>&1; then
@@ -191,11 +229,11 @@ install_skill_activation_prompt() {
     return 1
   fi
 
-  # Copy hook files
+  # Always overwrite hook files to ensure latest code
   if [[ -f "${TEMP_DIR}/.claude/hooks/skill-activation-prompt.sh" ]]; then
     cp "${TEMP_DIR}/.claude/hooks/skill-activation-prompt.sh" "${HOOKS_DIR}/"
     chmod +x "${HOOKS_DIR}/skill-activation-prompt.sh"
-    log "✓ Copied skill-activation-prompt.sh"
+    log "✓ Synced skill-activation-prompt.sh"
   else
     err "skill-activation-prompt.sh not found in repository"
     return 1
@@ -203,67 +241,16 @@ install_skill_activation_prompt() {
 
   if [[ -f "${TEMP_DIR}/.claude/hooks/skill-activation-prompt.ts" ]]; then
     cp "${TEMP_DIR}/.claude/hooks/skill-activation-prompt.ts" "${HOOKS_DIR}/"
-    log "✓ Copied skill-activation-prompt.ts"
+    log "✓ Synced skill-activation-prompt.ts"
   else
     err "skill-activation-prompt.ts not found in repository"
     return 1
   fi
 
-  # Copy package.json if it exists
+  # Always overwrite package.json if it exists
   if [[ -f "${TEMP_DIR}/.claude/hooks/package.json" ]]; then
     cp "${TEMP_DIR}/.claude/hooks/package.json" "${HOOKS_DIR}/"
-    log "✓ Copied package.json"
-  fi
-
-  # Copy skill-rules.json to .claude/skills/ directory
-  SKILLS_DIR="${PROJECT_DIR}/.claude/skills"
-  mkdir -p "${SKILLS_DIR}"
-
-  if [[ -f "${TEMP_DIR}/.claude/skills/skill-rules.json" ]]; then
-    cp "${TEMP_DIR}/.claude/skills/skill-rules.json" "${SKILLS_DIR}/"
-    log "✓ Copied skill-rules.json"
-  else
-    warn "skill-rules.json not found in repository - creating minimal configuration"
-    cat > "${SKILLS_DIR}/skill-rules.json" <<'SKILL_RULES_EOF'
-{
-  "version": "1.0.0",
-  "skills": {}
-}
-SKILL_RULES_EOF
-    log "✓ Created minimal skill-rules.json"
-  fi
-
-  # Copy skill directories from local agent_command repository
-  # Determine script directory to find local skills
-  SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-  LOCAL_SKILLS_DIR="${SCRIPT_DIR}/.claude/skills"
-
-  if [[ -d "${LOCAL_SKILLS_DIR}" ]]; then
-    log "Checking for local skill directories to copy..."
-
-    # Find all directories in local skills (excluding . and ..)
-    for skill_dir in "${LOCAL_SKILLS_DIR}"/*/ ; do
-      if [[ -d "${skill_dir}" ]]; then
-        skill_name=$(basename "${skill_dir}")
-
-        # Skip if already exists in target
-        if [[ -d "${SKILLS_DIR}/${skill_name}" ]]; then
-          log "✓ ${skill_name} already exists in target"
-        else
-          # Copy the entire skill directory
-          cp -r "${skill_dir}" "${SKILLS_DIR}/"
-          log "✓ Copied skill: ${skill_name}"
-        fi
-      fi
-    done
-
-    # Also copy skill-rules.json from local repo if it exists (overwrite from TEMP_DIR)
-    if [[ -f "${LOCAL_SKILLS_DIR}/skill-rules.json" ]]; then
-      cp "${LOCAL_SKILLS_DIR}/skill-rules.json" "${SKILLS_DIR}/"
-      log "✓ Updated skill-rules.json from local repository"
-    fi
-  else
-    warn "Local skills directory not found: ${LOCAL_SKILLS_DIR}"
+    log "✓ Synced package.json"
   fi
 
   # Install npm dependencies
@@ -290,20 +277,15 @@ SKILL_RULES_EOF
 }
 
 # Function to install post-tool-use-tracker hook
+# Always overwrites to ensure projects have the most recent code
 install_post_tool_use_tracker() {
   log "Installing post-tool-use-tracker hook..."
 
-  # Check if already installed
-  if [[ -f "${HOOKS_DIR}/post-tool-use-tracker.sh" ]]; then
-    log "✓ post-tool-use-tracker already installed"
-    return 0
-  fi
-
-  # Copy hook file
+  # Always overwrite hook file to ensure latest code
   if [[ -f "${TEMP_DIR}/.claude/hooks/post-tool-use-tracker.sh" ]]; then
     cp "${TEMP_DIR}/.claude/hooks/post-tool-use-tracker.sh" "${HOOKS_DIR}/"
     chmod +x "${HOOKS_DIR}/post-tool-use-tracker.sh"
-    log "✓ Copied post-tool-use-tracker.sh"
+    log "✓ Synced post-tool-use-tracker.sh"
   else
     err "post-tool-use-tracker.sh not found in repository"
     return 1
@@ -314,23 +296,18 @@ install_post_tool_use_tracker() {
 }
 
 # Function to install user-prompt-logger hook
+# Always overwrites to ensure projects have the most recent code
 install_user_prompt_logger() {
   log "Installing user-prompt-logger hook..."
-
-  # Check if already installed
-  if [[ -f "${HOOKS_DIR}/user-prompt-logger.sh" ]]; then
-    log "✓ user-prompt-logger already installed"
-    return 0
-  fi
 
   # Determine script directory to find the hook source
   SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
-  # Copy hook file from local .claude/hooks directory
+  # Always overwrite hook file to ensure latest code
   if [[ -f "${SCRIPT_DIR}/.claude/hooks/user-prompt-logger.sh" ]]; then
     cp "${SCRIPT_DIR}/.claude/hooks/user-prompt-logger.sh" "${HOOKS_DIR}/"
     chmod +x "${HOOKS_DIR}/user-prompt-logger.sh"
-    log "✓ Copied user-prompt-logger.sh from local repository"
+    log "✓ Synced user-prompt-logger.sh"
   else
     warn "user-prompt-logger.sh not found in ${SCRIPT_DIR}/.claude/hooks/"
     warn "Skipping user-prompt-logger installation"
@@ -710,6 +687,10 @@ SETTINGS_EOF
   return 0
 }
 
+# Always sync skills first (regardless of hook type)
+# This ensures skill-rules.json and skill directories are always up-to-date
+sync_skills
+
 # Install hooks based on type
 INSTALL_SUCCESS=true
 
@@ -755,8 +736,9 @@ esac
 # Summary
 echo ""
 if [[ "${INSTALL_SUCCESS}" == "true" ]]; then
-  log "✓ Successfully installed hooks"
+  log "✓ Successfully synced hooks and skills"
   log "Hooks location: ${HOOKS_DIR}"
+  log "Skills location: ${PROJECT_DIR}/.claude/skills"
   log "Settings file: ${SETTINGS_FILE}"
   exit 0
 else

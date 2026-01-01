@@ -162,6 +162,70 @@ Commands support GitHub, Bitbucket, and local development with appropriate CLI i
 
 
 
+## Sync Script Design Principles
+
+When creating or modifying sync scripts (e.g., `sync_skill.sh`, `sync_agent_commands.sh`), follow these mandatory rules:
+
+### Always Overwrite Rule (Non-Negotiable)
+All customized code MUST be overwritten on every sync to ensure target projects always have the most recent code:
+
+1. **Hook files** (.sh, .ts, .js): Always overwrite, never skip if exists
+2. **Skill directories**: Always `rm -rf` existing and `cp -r` fresh copy
+3. **Configuration files** (skill-rules.json, package.json): Always overwrite
+4. **No "already installed" early returns** that skip updates
+
+### Anti-Pattern (DO NOT DO THIS)
+```bash
+# WRONG: Skips update if file exists
+if [[ -f "${HOOKS_DIR}/my-hook.sh" ]]; then
+  log "✓ my-hook already installed"
+  return 0  # ← This prevents updates!
+fi
+```
+
+### Correct Pattern
+```bash
+# CORRECT: Always overwrite to ensure latest code
+if [[ -f "${SOURCE_DIR}/my-hook.sh" ]]; then
+  cp "${SOURCE_DIR}/my-hook.sh" "${HOOKS_DIR}/"
+  chmod +x "${HOOKS_DIR}/my-hook.sh"
+  log "✓ Synced my-hook.sh"
+fi
+```
+
+### Directory Sync Patterns
+
+**Pattern 1: Wipe and Replace** (for framework-only directories)
+Use for: `skills/`, `commands/`, `prompts/`
+```bash
+# Wipe entire directory and replace from source
+# Ensures outdated/removed items are deleted
+rm -rf "${DEST_DIR}"
+mkdir -p "${DEST_DIR}"
+cp -r "${SOURCE_DIR}/"* "${DEST_DIR}/"
+```
+
+**Pattern 2: Copy and Overwrite** (for mixed user/framework directories)
+Use for: `hooks/` (users may have custom hooks)
+```bash
+# Overwrite framework files, preserve user-created files
+# Does NOT delete files that don't exist in source
+cp -r "${SOURCE_DIR}/"* "${DEST_DIR}/"
+```
+
+| Directory | Pattern | Reason |
+|-----------|---------|--------|
+| `.claude/skills/` | Wipe and Replace | Framework-only, no user content |
+| `~/.claude/commands/` | Wipe and Replace | Framework-only, no user content |
+| `~/.codex/prompts/` | Wipe and Replace | Framework-only, no user content |
+| `.claude/hooks/` | Copy and Overwrite | Users may have custom hooks |
+
+### Rationale
+- Source repository (agent-command) is the **single source of truth**
+- Target projects should always receive the latest hooks, skills, and configurations
+- Stale code in target projects causes debugging nightmares
+- "Preserve existing" logic only applies to **user-created** content, not **framework-provided** code
+
 ## Hook Debugging
 
 When creating or debugging Claude Code hooks, follow these systematic debugging practices to identify and resolve issues efficiently.

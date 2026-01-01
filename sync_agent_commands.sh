@@ -223,9 +223,12 @@ mkdir -p "${CLAUDE_DIR}" "${CODEX_DIR}"
 
 copy_to() {
   local src="$1" dest="$2"
+  # Wipe destination and replace from source
+  # This ensures outdated files are removed
+  rm -rf "${dest}"
+  mkdir -p "${dest}"
   if command -v rsync >/dev/null 2>&1; then
     # Trailing slash copies contents of src into dest
-    # Use -v for verbose output on older rsync versions (macOS default)
     rsync -av "${src}/" "${dest}/"
   else
     # cp fallback; "." includes hidden files in src

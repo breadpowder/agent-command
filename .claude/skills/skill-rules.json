@@ -318,6 +318,36 @@
                   "useForm"
               ]
           }
+      },
+      "copilot-prompt-file": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Create GitHub Copilot prompt files (.prompt.md) for VS Code",
+          "promptTriggers": {
+              "keywords": [
+                  "copilot prompt",
+                  "prompt file",
+                  ".prompt.md",
+                  "copilot slash command",
+                  "create prompt",
+                  "vscode prompt",
+                  "copilot custom prompt",
+                  ".github/prompts"
+              ],
+              "intentPatterns": [
+                  "(create|make|build|generate).*?(copilot|vscode).*?prompt",
+                  "(create|add).*?prompt.*?file",
+                  "prompt.*?for.*?copilot",
+                  "(slash|custom).*?command.*?copilot"
+              ]
+          },
+          "fileTriggers": {
+              "pathPatterns": [
+                  ".github/prompts/*.prompt.md",
+                  "**/*.prompt.md"
+              ]
+          }
       }
   },
   "notes": {
