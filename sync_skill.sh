@@ -187,6 +187,16 @@ sync_skills() {
 
   SKILLS_DIR="${PROJECT_DIR}/.claude/skills"
 
+  # -------------------------------------------------------------------------
+  # Skills to SKIP during sync
+  # -------------------------------------------------------------------------
+  # These skills have dependencies not available in all target projects:
+  # - skill-creator-from-youtube: Requires yt-dlp MCP server
+  # -------------------------------------------------------------------------
+  SKIP_SKILLS=(
+    "skill-creator-from-youtube"
+  )
+
   if [[ -d "${LOCAL_SKILLS_DIR}" ]]; then
     # Wipe entire skills directory and recreate from source
     # This ensures outdated skills are removed
@@ -194,20 +204,34 @@ sync_skills() {
     rm -rf "${SKILLS_DIR}"
     mkdir -p "${SKILLS_DIR}"
 
-    # Copy all contents from source
-    cp -r "${LOCAL_SKILLS_DIR}/"* "${SKILLS_DIR}/"
-
-    # Log what was synced
-    for skill_dir in "${SKILLS_DIR}"/*/ ; do
-      if [[ -d "${skill_dir}" ]]; then
-        skill_name=$(basename "${skill_dir}")
-        log "✓ Synced skill: ${skill_name}"
-      fi
-    done
-
-    if [[ -f "${SKILLS_DIR}/skill-rules.json" ]]; then
+    # Copy skill-rules.json first (always needed)
+    if [[ -f "${LOCAL_SKILLS_DIR}/skill-rules.json" ]]; then
+      cp "${LOCAL_SKILLS_DIR}/skill-rules.json" "${SKILLS_DIR}/"
       log "✓ Synced skill-rules.json"
     fi
+
+    # Copy each skill directory individually, skipping excluded ones
+    for skill_source in "${LOCAL_SKILLS_DIR}"/*/ ; do
+      if [[ -d "${skill_source}" ]]; then
+        skill_name=$(basename "${skill_source}")
+
+        # Check if skill should be skipped
+        skip=false
+        for skip_skill in "${SKIP_SKILLS[@]}"; do
+          if [[ "${skill_name}" == "${skip_skill}" ]]; then
+            skip=true
+            break
+          fi
+        done
+
+        if [[ "${skip}" == "true" ]]; then
+          log "⊘ Skipping skill (dependency not ready): ${skill_name}"
+        else
+          cp -r "${skill_source}" "${SKILLS_DIR}/"
+          log "✓ Synced skill: ${skill_name}"
+        fi
+      fi
+    done
   else
     warn "Local skills directory not found: ${LOCAL_SKILLS_DIR}"
     return 1

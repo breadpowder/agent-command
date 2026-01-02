@@ -348,6 +348,83 @@
                   "**/*.prompt.md"
               ]
           }
+      },
+      "skill-creator-from-youtube": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "YouTube-dedicated workflow for creating structured skills from video tutorials, lectures, and guides using yt-dlp MCP",
+          "promptTriggers": {
+              "keywords": [
+                  "youtube skill",
+                  "create skill from youtube",
+                  "youtube video to skill",
+                  "youtube tutorial skill",
+                  "yt-dlp skill",
+                  "video to skill",
+                  "transcript to skill",
+                  "youtube transcript",
+                  "skill from video"
+              ],
+              "intentPatterns": [
+                  "(create|build|make).*?(skill|guide).*(from|using).*(youtube|video)",
+                  "(convert|transform).*(youtube|video).*(to|into).*(skill|guide)",
+                  "skill.*?(from|based on).*?(youtube|video|tutorial)",
+                  "(extract|create).*?skill.*?(youtube|yt-dlp)"
+              ]
+          }
+      },
+      "kubernetes-debug": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "high",
+          "description": "Systematic Kubernetes/OpenShift networking and application troubleshooting using bottom-up methodology (Pod → Service → Ingress)",
+          "promptTriggers": {
+              "keywords": [
+                  "kubernetes debug",
+                  "k8s debug",
+                  "pod not starting",
+                  "service not routing",
+                  "ingress not working",
+                  "kubectl troubleshoot",
+                  "openshift debug",
+                  "oc debug",
+                  "pod crash",
+                  "container error",
+                  "k8s networking"
+              ],
+              "intentPatterns": [
+                  "(debug|troubleshoot|fix).*(kubernetes|k8s|openshift|ocp)",
+                  "(pod|service|ingress|route).*(not|fail|error|crash|issue)",
+                  "(why|how).*(pod|service|ingress).*(not|fail|work)",
+                  "(kubernetes|k8s).*(networking|connectivity|routing).*?(issue|problem|debug)"
+              ]
+          }
+      },
+      "deepagents-guide": {
+          "type": "domain",
+          "enforcement": "suggest",
+          "priority": "medium",
+          "description": "Guide for building Deep Agents using the deepagents Python package on LangGraph with planning tools, virtual file systems, and sub-agent delegation",
+          "promptTriggers": {
+              "keywords": [
+                  "deep agent",
+                  "deepagents",
+                  "langraph agent",
+                  "planning tool",
+                  "sub agent",
+                  "virtual file system",
+                  "react agent",
+                  "agent delegation",
+                  "hwchase17/deepagents"
+              ],
+              "intentPatterns": [
+                  "(create|build|implement).*?(deep agent|deepagent)",
+                  "(use|understand|learn).*?(deepagents|deep agents)",
+                  "(langraph|langgraph).*?(agent|planning|sub.?agent)",
+                  "(planning|task|todo).*?tool.*?agent"
+              ]
+          }
       }
   },
   "notes": {

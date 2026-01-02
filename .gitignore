@@ -10,6 +10,9 @@ memory/graphiti/
 
 node_modules/
 
+# Python virtual environment
+.venv/
+
 # Claude Code synced resources (synced from external repos)
 .claude/agents/
 .claude/hooks/
