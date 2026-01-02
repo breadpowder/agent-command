@@ -208,7 +208,8 @@ Skill creation involves these steps:
 3. Initialize the skill (run init_skill.py)
 4. Edit the skill (implement resources and write SKILL.md)
 5. Package the skill (run package_skill.py)
-6. Iterate based on real usage
+6. Register the skill (update skill-rules.json)
+7. Iterate based on real usage
 
 Follow these steps in order, skipping only if there is a clear reason why they are not applicable.
 
@@ -344,7 +345,58 @@ The packaging script will:
 
 If validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.
 
-### Step 6: Iterate
+### Step 6: Register the Skill
+
+After packaging, register the skill in `skill-rules.json` to enable UI activation suggestions. This file controls when skills appear as suggestions in the activation hook.
+
+**Location**: `.claude/skills/skill-rules.json`
+
+**Add a new entry** following this structure:
+
+```json
+"<skill-name>": {
+    "type": "domain",
+    "enforcement": "suggest",
+    "priority": "high",
+    "description": "<Brief description matching SKILL.md frontmatter>",
+    "promptTriggers": {
+        "keywords": [
+            "<keyword1>",
+            "<keyword2>",
+            "..."
+        ],
+        "intentPatterns": [
+            "(create|build|make).*?<domain>.*?<action>",
+            "..."
+        ]
+    },
+    "fileTriggers": {
+        "pathPatterns": [
+            "**/*.<extension>",
+            "**/relevant/path/**/*"
+        ]
+    }
+}
+```
+
+**Fields**:
+| Field | Required | Description |
+|-------|----------|-------------|
+| `type` | Yes | Usually `"domain"` for specialized skills |
+| `enforcement` | Yes | `"suggest"` (show suggestion), `"block"` (require), `"warn"` (advisory) |
+| `priority` | Yes | `"critical"`, `"high"`, `"medium"`, `"low"` |
+| `description` | Yes | Brief description for activation display |
+| `promptTriggers.keywords` | Yes | Words/phrases that trigger skill suggestion |
+| `promptTriggers.intentPatterns` | No | Regex patterns for intent matching |
+| `fileTriggers.pathPatterns` | No | Glob patterns for file-based activation |
+
+**Guidelines**:
+- Keywords should be lowercase, distinct to the skill's domain
+- Intent patterns use regex; escape special characters
+- Include both what the skill does AND when to use it
+- Test by mentioning keywords to verify activation
+
+### Step 7: Iterate
 
 After testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.
 

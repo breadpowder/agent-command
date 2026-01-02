@@ -30,3 +30,7 @@ node_modules/
 
 # User prompt logs (local workflow tracking)
 prompt-logs/
+
+# Packaged skill files (build artifacts for distribution)
+*.skill
+*.pyc
