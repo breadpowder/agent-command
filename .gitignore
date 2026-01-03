@@ -24,6 +24,10 @@ node_modules/
 !.claude/skills/skill-creator/
 !.claude/skills/mcp-builder/
 !.claude/skills/xlsx/
+!.claude/skills/extract-style-guide-skill/
+!.claude/skills/copilot-agent/
+!.claude/skills/copilot-prompt/
+!.claude/skills/deepagents-guide/
 .claude/tsc-cache/
 
 .claude/settings.json
@@ -34,3 +38,4 @@ prompt-logs/
 # Packaged skill files (build artifacts for distribution)
 *.skill
 *.pyc
+.mcp.json
