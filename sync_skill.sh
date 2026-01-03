@@ -227,7 +227,9 @@ sync_skills() {
         if [[ "${skip}" == "true" ]]; then
           log "⊘ Skipping skill (dependency not ready): ${skill_name}"
         else
-          cp -r "${skill_source}" "${SKILLS_DIR}/"
+          # Use explicit destination path to preserve directory structure
+          # (glob */ produces trailing slash, which makes cp copy contents not directory)
+          cp -r "${skill_source}" "${SKILLS_DIR}/${skill_name}"
           log "✓ Synced skill: ${skill_name}"
         fi
       fi
