@@ -28,6 +28,7 @@ node_modules/
 !.claude/skills/copilot-agent/
 !.claude/skills/copilot-prompt/
 !.claude/skills/deepagents-guide/
+!.claude/skills/kubernetes-debug/
 .claude/tsc-cache/
 
 .claude/settings.json
