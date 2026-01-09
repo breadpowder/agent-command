@@ -4,47 +4,75 @@
 
 The AgentDK SDLC (Software Development Lifecycle) commands provide a comprehensive development workflow system optimized for both feature development and bug fixing. Commands are organized by workflow type with clear separation of concerns.
 
-## 🔄 Quick Setup - Sync Commands to Your Environment
+## 🔄 Quick Setup - Sync Commands, Skills & Hooks
 
-To use these commands with AI agents (Claude, Codex, etc.), sync them to your local agent directories:
+To use these commands with AI agents (Claude, Codex, etc.), sync them to your local agent directories.
 
-### **Option 1: Sync from GitHub (Recommended)**
+### **Sync SDLC Commands**
 ```bash
-# Clone latest version from GitHub and sync to agent directories
+# Sync commands from GitHub (recommended)
 ./sync_agent_commands.sh --github
-```
 
-### **Option 2: Sync from Local Directory**
-```bash
-# Sync from current local repository
+# Or sync from local repository
 ./sync_agent_commands.sh
-
-# Or sync from a custom directory
-./sync_agent_commands.sh /path/to/custom/commands
 ```
 
-### **What it does:**
-- 📁 **Claude**: Copies commands to `~/.claude/commands/`
-- 📁 **Codex**: Copies commands to `~/.codex/prompts/`
-- 🔍 **Auto-detects**: Finds and syncs all `.md` command files
-- 🧹 **Clean sync**: Uses `rsync` for efficient copying (falls back to `cp`)
+### **Sync Skills & Hooks (Hybrid Architecture)**
+
+The skill system uses a **hybrid architecture** for optimal performance:
+
+| Component | Location | Frequency | Script |
+|-----------|----------|-----------|--------|
+| Skills + skill-activation | `~/.claude/` (user) | Run **once** | `sync_user_skills.sh` |
+| Project hooks (logger, tracker) | `.claude/` (project) | Run **per project** | `sync_project_hooks.sh` |
+
+```bash
+# Option 1: Sync everything (user + project)
+./sync_skill.sh
+
+# Option 2: Sync user-level only (run once globally)
+./sync_user_skills.sh
+# or
+./sync_skill.sh --user-only
+
+# Option 3: Sync project-level only (run per project)
+./sync_project_hooks.sh --project-dir /path/to/project
+# or
+./sync_skill.sh --project-only
+```
+
+### **What Gets Synced:**
+
+**User Level (`~/.claude/`)** - Shared across ALL projects:
+- 📁 `skills/` - All skill directories + skill-rules.json (including playwright-skill)
+- 📁 `hooks/` - skill-activation-prompt hook
+- ⚙️ `settings.json` - skill-activation hook configuration
+
+**Project Level (`.claude/`)** - Per-project:
+- 📁 `hooks/` - user-prompt-logger, post-tool-use-tracker
+- ⚙️ `settings.json` - project-specific hook configuration
+
+**Commands:**
+- 📁 `~/.claude/commands/` - SDLC command specifications
+- 📁 `~/.codex/prompts/` - Codex prompt specifications
 
 ### **Usage Examples:**
 ```bash
-# Get help
-./sync_agent_commands.sh --help
+# First time setup (install skills globally)
+./sync_user_skills.sh
 
-# Quick sync from GitHub (always gets latest version)
-./sync_agent_commands.sh --github
+# For each new project (install project hooks)
+cd /path/to/my-project
+/path/to/agent-command/sync_project_hooks.sh
 
-# Sync from local development version
-./sync_agent_commands.sh
+# Update skills only (no npm install if unchanged)
+./sync_user_skills.sh --skills-only
 
-# Sync from custom location
-./sync_agent_commands.sh ~/my-custom-commands
+# Full sync with custom project directory
+./sync_skill.sh --project-dir /path/to/project
 ```
 
-**💡 Pro tip**: Use `--github` flag to always get the latest command updates without manually pulling the repository.
+**💡 Pro tip**: Run `sync_user_skills.sh` once after cloning this repo. Then use `sync_project_hooks.sh` for each project you work on.
 
 ## 🎯 Refactored Command Structure
 

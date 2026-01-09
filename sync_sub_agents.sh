@@ -1,41 +1,44 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Sync Claude Code sub-agent definitions to local project
+# Sync Claude Code sub-agent definitions to user-level config
 #
 # Usage:
 #   sync_sub_agents.sh [OPTIONS]
 #
 # Options:
 #   --help, -h              Show this help message
-#   --project-dir DIR       Specify project directory (default: current directory)
 #   --agent NAME            Sync specific agent by name (default: all)
 #   --list                  List available agents without syncing
 #   --github                Clone from GitHub repo (default: uses local cache)
+#   --project-level         Sync to project .claude/agents/ instead of user-level
+#   --project-dir DIR       Specify project directory (requires --project-level)
 #
 # Features:
-#   - Clones claude-code-infrastructure-showcase repository for latest agents
-#   - Copies agent definitions from .claude/agents/ to project
-#   - Supports syncing all agents or specific agents by name
+#   - Syncs agent definitions to ~/.claude/agents/ (user-level, default)
+#   - Agents are available globally across all projects
 #   - Caches repository locally for faster subsequent syncs
-#   - Provides list of available agents
+#   - Optional project-level sync with --project-level flag
 #
 # Requirements:
 #   - git (required)
 #
 # Examples:
-#   sync_sub_agents.sh                              # Sync all agents to current directory
+#   sync_sub_agents.sh                              # Sync all agents to ~/.claude/agents/
 #   sync_sub_agents.sh --list                       # List available agents
 #   sync_sub_agents.sh --agent code-reviewer       # Sync only code-reviewer agent
-#   sync_sub_agents.sh --project-dir /path/to/project  # Sync to specific directory
 #   sync_sub_agents.sh --github                    # Force clone from GitHub
+#   sync_sub_agents.sh --project-level             # Sync to current project's .claude/agents/
+#   sync_sub_agents.sh --project-level --project-dir /path/to/project
 
 log() { printf "[sync_agents] %s\n" "$*" >&2; }
 err() { printf "[sync_agents][error] %s\n" "$*" >&2; }
 warn() { printf "[sync_agents][warn] %s\n" "$*" >&2; }
 
 # Default values
+USER_LEVEL_DIR="${HOME}/.claude/agents"
 PROJECT_DIR="${PWD}"
+PROJECT_LEVEL=false
 AGENT_NAME=""
 LIST_ONLY=false
 FORCE_GITHUB=false
@@ -63,27 +66,34 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Options:"
       echo "  --help, -h              Show this help message"
-      echo "  --project-dir DIR       Specify project directory (default: current directory)"
       echo "  --agent NAME            Sync specific agent by name (default: all)"
       echo "  --list                  List available agents without syncing"
       echo "  --github                Force clone from GitHub (default: uses cached repo)"
+      echo "  --project-level         Sync to project .claude/agents/ instead of user-level"
+      echo "  --project-dir DIR       Specify project directory (requires --project-level)"
       echo ""
       echo "Features:"
-      echo "  • Automatically copies agent definitions to .claude/agents/"
+      echo "  • Syncs agent definitions to ~/.claude/agents/ (user-level, default)"
+      echo "  • User-level agents are available globally across all projects"
       echo "  • Caches repository locally for faster syncing"
       echo "  • Supports syncing individual or all agents"
-      echo "  • Lists available agents with descriptions"
+      echo "  • Optional project-level sync with --project-level flag"
       echo ""
       echo "Requirements:"
       echo "  • git (required)"
       echo ""
       echo "Examples:"
-      echo "  sync_sub_agents.sh                              # Sync all agents to current directory"
+      echo "  sync_sub_agents.sh                              # Sync all agents to ~/.claude/agents/"
       echo "  sync_sub_agents.sh --list                       # List available agents"
       echo "  sync_sub_agents.sh --agent code-reviewer       # Sync only code-reviewer agent"
-      echo "  sync_sub_agents.sh --project-dir /path/to/project  # Sync to specific directory"
       echo "  sync_sub_agents.sh --github                    # Force fresh clone from GitHub"
+      echo "  sync_sub_agents.sh --project-level             # Sync to current project's .claude/agents/"
+      echo "  sync_sub_agents.sh --project-level --project-dir /path/to/project"
       exit 0
+      ;;
+    --project-level)
+      PROJECT_LEVEL=true
+      shift
       ;;
     --project-dir)
       shift
@@ -111,10 +121,24 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Validate project directory (skip if --list only)
-if [[ "${LIST_ONLY}" == "false" && ! -d "${PROJECT_DIR}" ]]; then
+# Validate --project-dir requires --project-level
+if [[ "${PROJECT_DIR}" != "${PWD}" && "${PROJECT_LEVEL}" == "false" ]]; then
+  err "--project-dir requires --project-level flag"
+  echo "Use: sync_sub_agents.sh --project-level --project-dir ${PROJECT_DIR}"
+  exit 1
+fi
+
+# Validate project directory (only for project-level sync)
+if [[ "${PROJECT_LEVEL}" == "true" && "${LIST_ONLY}" == "false" && ! -d "${PROJECT_DIR}" ]]; then
   err "Project directory does not exist: ${PROJECT_DIR}"
   exit 1
+fi
+
+# Determine target directory
+if [[ "${PROJECT_LEVEL}" == "true" ]]; then
+  TARGET_DIR="${PROJECT_DIR}/.claude/agents"
+else
+  TARGET_DIR="${USER_LEVEL_DIR}"
 fi
 
 # Check if git is available
@@ -249,7 +273,7 @@ list_agents() {
 # Function to sync agents
 sync_agents() {
   local repo_dir="$1"
-  local target_dir="${PROJECT_DIR}/.claude/agents"
+  local target_dir="${TARGET_DIR}"
   local agents_source="${repo_dir}/.claude/agents"
 
   if [[ ! -d "${agents_source}" ]]; then
@@ -309,7 +333,11 @@ if [[ "${LIST_ONLY}" == "true" ]]; then
   exit $?
 fi
 
-log "Target project: ${PROJECT_DIR}"
+if [[ "${PROJECT_LEVEL}" == "true" ]]; then
+  log "Target: project-level at ${TARGET_DIR}"
+else
+  log "Target: user-level at ${TARGET_DIR}"
+fi
 
 if ! sync_agents "${REPO_DIR}"; then
   err "Failed to sync agents"
@@ -318,7 +346,11 @@ fi
 
 echo ""
 log "✓ Successfully synced agents"
-log "Agents location: ${PROJECT_DIR}/.claude/agents"
+log "Agents location: ${TARGET_DIR}"
 echo ""
-log "Usage: Reference agents in your Claude Code workflows"
+if [[ "${PROJECT_LEVEL}" == "true" ]]; then
+  log "Usage: Reference agents in this project's Claude Code workflows"
+else
+  log "Usage: Agents are now available globally across all projects"
+fi
 log "  Example: 'Use the code-reviewer agent to review my changes'"

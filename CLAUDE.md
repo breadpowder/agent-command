@@ -162,6 +162,72 @@ Commands support GitHub, Bitbucket, and local development with appropriate CLI i
 
 
 
+## Skills & Hooks Hybrid Architecture
+
+The skill system uses a **hybrid architecture** separating user-level (global) and project-level (per-project) components:
+
+### Architecture Overview
+
+```
+USER LEVEL (~/.claude/) - Run once, works everywhere:
+├── skills/                    # All skills + skill-rules.json
+│   ├── playwright-skill/      # UI testing with Playwright
+│   ├── pptx/                  # PowerPoint manipulation
+│   ├── xlsx/                  # Excel manipulation
+│   ├── mcp-builder/           # MCP server builder
+│   ├── skill-creator/         # Skill creation guide
+│   └── skill-rules.json       # Skill activation triggers
+├── hooks/                     # Shared hooks
+│   ├── skill-activation-prompt.sh
+│   ├── skill-activation-prompt.ts
+│   └── package.json + node_modules/
+└── settings.json              # skill-activation hook config
+
+PROJECT LEVEL (.claude/) - Per-project:
+├── hooks/                     # Project-specific hooks
+│   ├── user-prompt-logger.sh  # Logs to project/prompt-logs/
+│   └── post-tool-use-tracker.sh # Tracks to project/.claude/tsc-cache/
+└── settings.json              # Project hook config
+```
+
+### Sync Scripts
+
+| Script | Purpose | Frequency |
+|--------|---------|-----------|
+| `sync_skill.sh` | Master orchestrator (both levels) | As needed |
+| `sync_user_skills.sh` | User-level: skills + skill-activation | Run **once** globally |
+| `sync_project_hooks.sh` | Project-level: logger + tracker | Run **per project** |
+
+### Usage
+
+```bash
+# First time setup (install skills globally)
+./sync_user_skills.sh
+
+# For each new project
+./sync_project_hooks.sh --project-dir /path/to/project
+
+# Or sync everything at once
+./sync_skill.sh
+
+# Update skills only (faster, no npm)
+./sync_user_skills.sh --skills-only
+```
+
+### Rationale
+
+- **skill-activation-prompt** reads `skill-rules.json` → must be at same level (user)
+- **user-prompt-logger** writes to `project/prompt-logs/` → project level
+- **post-tool-use-tracker** writes to `project/.claude/tsc-cache/` → project level
+
+### Sub-Agents
+
+Sub-agents are synced to `~/.claude/agents/` (user-level) by default using `sync_sub_agents.sh`.
+
+**Note**: Agents are NOT auto-discovered. To use synced agents:
+- Reference directly in prompts: "Use the code-reviewer agent to review my changes"
+- Or use CLI flag: `claude --agents @from ~/.claude/agents/`
+
 ## Sync Script Design Principles
 
 When creating or modifying sync scripts (e.g., `sync_skill.sh`, `sync_agent_commands.sh`), follow these mandatory rules:
@@ -215,10 +281,11 @@ cp -r "${SOURCE_DIR}/"* "${DEST_DIR}/"
 
 | Directory | Pattern | Reason |
 |-----------|---------|--------|
-| `.claude/skills/` | Wipe and Replace | Framework-only, no user content |
+| `~/.claude/skills/` | Wipe and Replace | Framework-only, shared across projects |
+| `~/.claude/hooks/` | Wipe and Replace | skill-activation-prompt only |
 | `~/.claude/commands/` | Wipe and Replace | Framework-only, no user content |
 | `~/.codex/prompts/` | Wipe and Replace | Framework-only, no user content |
-| `.claude/hooks/` | Copy and Overwrite | Users may have custom hooks |
+| `.claude/hooks/` | Copy and Overwrite | Users may have custom project hooks |
 
 ### Rationale
 - Source repository (agent-command) is the **single source of truth**
