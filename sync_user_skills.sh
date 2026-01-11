@@ -35,7 +35,7 @@ SKILLS_ONLY="false"
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --help|-h|help)
-      echo "Sync skills and skill-activation-prompt to USER LEVEL (~/.claude/)"
+      echo "Sync skills and hooks to USER LEVEL (~/.claude/)"
       echo ""
       echo "Usage: sync_user_skills.sh [OPTIONS]"
       echo ""
@@ -45,8 +45,14 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Components Synced:"
       echo "  ~/.claude/skills/          All skill directories + skill-rules.json"
-      echo "  ~/.claude/hooks/           skill-activation-prompt hook"
+      echo "  ~/.claude/hooks/           Shared hooks:"
+      echo "    - skill-activation-prompt.sh  Auto-activate skills on prompt"
+      echo "    - notify.sh                   Task completion notifications"
       echo "  ~/.claude/settings.json    Hook configuration"
+      echo ""
+      echo "Notify Hook Prerequisites:"
+      echo "  macOS:  Built-in (osascript) - enable in System Settings > Notifications"
+      echo "  Linux:  sudo apt install libnotify-bin"
       echo ""
       echo "Run this script ONCE to enable skills for ALL projects."
       exit 0
@@ -176,48 +182,57 @@ install_skill_activation_hook() {
 }
 
 # ============================================================================
-# Update User Settings
+# Install notify Hook (Cross-platform task completion notifications)
+# ============================================================================
+install_notify_hook() {
+  log "Installing notify hook to ${USER_HOOKS_DIR}..."
+
+  if [[ -f "${LOCAL_HOOKS_DIR}/notify.sh" ]]; then
+    cp "${LOCAL_HOOKS_DIR}/notify.sh" "${USER_HOOKS_DIR}/"
+    chmod +x "${USER_HOOKS_DIR}/notify.sh"
+    log "✓ Synced notify.sh"
+  else
+    warn "notify.sh not found in ${LOCAL_HOOKS_DIR} - skipping"
+    return 0
+  fi
+
+  log "✓ notify hook installed"
+}
+
+# ============================================================================
+# Update User Settings (MERGE strategy - never overwrites existing settings)
+# ============================================================================
+# This function uses a MERGE strategy:
+#   - Checks if each hook already exists before adding
+#   - Preserves ALL existing user settings (env, plugins, etc.)
+#   - Only adds missing hooks, never removes or modifies existing ones
+#   - Safe to run multiple times (idempotent)
 # ============================================================================
 update_user_settings() {
-  log "Updating ${USER_SETTINGS_FILE}..."
+  log "Updating ${USER_SETTINGS_FILE} (merge mode - preserves existing settings)..."
 
   if ! command -v jq >/dev/null 2>&1; then
     warn "jq not found - manual configuration required"
     warn "Add to ${USER_SETTINGS_FILE}:"
-    echo '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"$HOME/.claude/hooks/skill-activation-prompt.sh"}]}]}}'
+    echo '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"$HOME/.claude/hooks/skill-activation-prompt.sh"}]}],"Stop":[{"matcher":"*","hooks":[{"type":"command","command":"$HOME/.claude/hooks/notify.sh Task finished","timeout":5}]}]}}'
     return 1
   fi
 
-  # Check if hook already configured
-  if [[ -f "${USER_SETTINGS_FILE}" ]]; then
-    local exists=$(jq -r '.hooks.UserPromptSubmit?[]?.hooks?[]? | select(.command? | contains("skill-activation-prompt")) | .command' "${USER_SETTINGS_FILE}" 2>/dev/null)
-    if [[ -n "${exists}" ]]; then
-      log "✓ skill-activation-prompt already configured"
-      return 0
-    fi
+  local settings_updated=false
+
+  # Initialize settings file if needed (preserves existing content)
+  if [[ ! -f "${USER_SETTINGS_FILE}" ]]; then
+    echo '{}' > "${USER_SETTINGS_FILE}"
+    log "Created new settings file"
+  elif [[ "$(cat "${USER_SETTINGS_FILE}" 2>/dev/null)" == "{}" ]]; then
+    log "Settings file exists but empty, will add hooks"
+  else
+    log "Existing settings detected, merging (preserving user settings)..."
   fi
 
-  # Create or update settings
-  if [[ ! -f "${USER_SETTINGS_FILE}" ]] || [[ "$(cat "${USER_SETTINGS_FILE}" 2>/dev/null)" == "{}" ]]; then
-    cat > "${USER_SETTINGS_FILE}" <<EOF
-{
-  "hooks": {
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/skill-activation-prompt.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
-EOF
-    log "✓ Created user settings.json"
-  else
-    # Append to existing settings
+  # Check and add skill-activation-prompt hook
+  local skill_exists=$(jq -r '.hooks.UserPromptSubmit?[]?.hooks?[]? | select(.command? | contains("skill-activation-prompt")) | .command' "${USER_SETTINGS_FILE}" 2>/dev/null)
+  if [[ -z "${skill_exists}" ]]; then
     local temp=$(mktemp)
     jq '.hooks //= {} |
       if .hooks.UserPromptSubmit then
@@ -234,6 +249,44 @@ EOF
         }]
       end
     ' "${USER_SETTINGS_FILE}" > "${temp}" && mv "${temp}" "${USER_SETTINGS_FILE}"
+    log "✓ Added skill-activation-prompt hook"
+    settings_updated=true
+  else
+    log "✓ skill-activation-prompt already configured"
+  fi
+
+  # Check and add notify hook (Stop event)
+  local notify_exists=$(jq -r '.hooks.Stop?[]?.hooks?[]? | select(.command? | contains("notify.sh")) | .command' "${USER_SETTINGS_FILE}" 2>/dev/null)
+  if [[ -z "${notify_exists}" ]]; then
+    local temp=$(mktemp)
+    jq '.hooks //= {} |
+      if .hooks.Stop then
+        .hooks.Stop += [{
+          "matcher": "*",
+          "hooks": [{
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notify.sh Task finished",
+            "timeout": 5
+          }]
+        }]
+      else
+        .hooks.Stop = [{
+          "matcher": "*",
+          "hooks": [{
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notify.sh Task finished",
+            "timeout": 5
+          }]
+        }]
+      end
+    ' "${USER_SETTINGS_FILE}" > "${temp}" && mv "${temp}" "${USER_SETTINGS_FILE}"
+    log "✓ Added notify hook (Stop event)"
+    settings_updated=true
+  else
+    log "✓ notify hook already configured"
+  fi
+
+  if [[ "${settings_updated}" == "true" ]]; then
     log "✓ Updated user settings.json"
   fi
 }
@@ -250,6 +303,8 @@ if [[ "${SKILLS_ONLY}" == "false" ]]; then
   echo ""
   install_skill_activation_hook
   echo ""
+  install_notify_hook
+  echo ""
   update_user_settings
 fi
 
@@ -260,7 +315,13 @@ log "Installed to:"
 log "  Skills:   ${USER_SKILLS_DIR}"
 if [[ "${SKILLS_ONLY}" == "false" ]]; then
   log "  Hooks:    ${USER_HOOKS_DIR}"
+  log "    - skill-activation-prompt.sh (UserPromptSubmit)"
+  log "    - notify.sh (Stop - task completion notifications)"
   log "  Settings: ${USER_SETTINGS_FILE}"
 fi
 echo ""
 log "Skills are now available in ALL projects."
+echo ""
+log "Notify hook prerequisites:"
+log "  macOS:  Built-in (osascript) - enable notifications in System Settings"
+log "  Linux:  sudo apt install libnotify-bin"

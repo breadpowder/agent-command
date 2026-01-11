@@ -21,6 +21,7 @@ node_modules/
 !.claude/hooks/skill-activation-prompt.sh
 !.claude/hooks/skill-activation-prompt.ts
 !.claude/hooks/package.json
+!.claude/hooks/notify.sh
 .claude/skills/*
 !.claude/skills/skill-rules.json
 !.claude/skills/extract-style-guide-skill/

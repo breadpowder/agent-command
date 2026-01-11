@@ -178,10 +178,11 @@ USER LEVEL (~/.claude/) - Run once, works everywhere:
 │   ├── skill-creator/         # Skill creation guide
 │   └── skill-rules.json       # Skill activation triggers
 ├── hooks/                     # Shared hooks
-│   ├── skill-activation-prompt.sh
+│   ├── skill-activation-prompt.sh  # Auto-activate skills on prompt
 │   ├── skill-activation-prompt.ts
+│   ├── notify.sh              # Task completion notifications (cross-platform)
 │   └── package.json + node_modules/
-└── settings.json              # skill-activation hook config
+└── settings.json              # Hook configurations (UserPromptSubmit, Stop)
 
 PROJECT LEVEL (.claude/) - Per-project:
 ├── hooks/                     # Project-specific hooks
@@ -333,5 +334,80 @@ echo '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command"
 - **Global configuration syntax errors**: JSON syntax errors break all settings
 - **Permission issues**: Ensure hook scripts are executable (`chmod +x`)
 
+## Notify Hook (Task Completion Notifications)
+
+Cross-platform desktop notification hook that alerts when Claude Code completes tasks.
+
+### Features
+- **Cross-platform**: Works on macOS (osascript) and Linux (notify-send)
+- **Terminal-aware**: Shows which terminal triggered the notification (VS Code, iTerm2, etc.)
+- **Project-aware**: Displays project name in notification
+- **Silent failure**: No errors if notifications aren't enabled - Claude Code continues normally
+
+### Notification Format
+```
+Title: Claude Code
+Body:  [terminal_name] project_name: Task finished
+```
+
+Example: `[vscode] my-app: Task finished`
+
+### Prerequisites
+
+| OS | Requirement | Install |
+|----|-------------|---------|
+| macOS | osascript | Built-in |
+| macOS | Notification permission | System Settings → Notifications → Script Editor |
+| Linux | notify-send | `sudo apt install libnotify-bin` |
+
+### Hook Location
+- **Source**: `.claude/hooks/notify.sh` (tracked in git)
+- **Deployed to**: `~/.claude/hooks/notify.sh` (user level)
+- **Event**: `Stop` (triggers when Claude finishes tool execution)
+
+### Deployment
+Run `./sync_user_skills.sh` to deploy the notify hook along with other user-level components.
+
+### Settings Merge Strategy
+
+The sync script uses a **MERGE** strategy for `~/.claude/settings.json`:
+
+| Behavior | Description |
+|----------|-------------|
+| **Preserves existing** | All user settings (env, plugins, other hooks) are kept |
+| **Adds missing hooks** | Only adds hooks that don't already exist |
+| **Never overwrites** | Existing hooks are never modified or removed |
+| **Idempotent** | Safe to run multiple times |
+
+**Example**: If a host already has custom hooks configured:
+```json
+{
+  "env": { "MY_VAR": "value" },
+  "hooks": {
+    "PreToolUse": [{ "matcher": "Bash", "hooks": [...] }]
+  }
+}
+```
+
+After running `sync_user_skills.sh`, the result is:
+```json
+{
+  "env": { "MY_VAR": "value" },           // Preserved
+  "hooks": {
+    "PreToolUse": [...],                   // Preserved
+    "UserPromptSubmit": [...],             // Added
+    "Stop": [...]                          // Added
+  }
+}
+```
+
+### Testing
+```bash
+# Test directly
+~/.claude/hooks/notify.sh "Test message"
+
+# Verify settings.json includes Stop hook
+cat ~/.claude/settings.json | jq '.hooks.Stop'
+```
 
 ### When you commit to repo, your message must be one line, no bullet point. Never metion Claude as coauthor
