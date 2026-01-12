@@ -7,7 +7,7 @@ interface HookInput {
     transcript_path: string;
     cwd: string;
     permission_mode: string;
-    prompt: string;
+    user_prompt: string;  // Claude Code sends user_prompt, not prompt
 }
 
 interface PromptTriggers {
@@ -38,11 +38,16 @@ async function main() {
         // Read input from stdin
         const input = readFileSync(0, 'utf-8');
         const data: HookInput = JSON.parse(input);
-        const prompt = data.prompt.toLowerCase();
 
-        // Load skill rules
-        const projectDir = process.env.CLAUDE_PROJECT_DIR || '$HOME/project';
-        const rulesPath = join(projectDir, '.claude', 'skills', 'skill-rules.json');
+        // Defensive: exit silently if no prompt
+        if (!data.user_prompt) {
+            process.exit(0);
+        }
+        const prompt = data.user_prompt.toLowerCase();
+
+        // Load skill rules from user level (~/.claude/skills/)
+        const homeDir = process.env.HOME || '/home/user';
+        const rulesPath = join(homeDir, '.claude', 'skills', 'skill-rules.json');
         const rules: SkillRules = JSON.parse(readFileSync(rulesPath, 'utf-8'));
 
         const matchedSkills: MatchedSkill[] = [];
