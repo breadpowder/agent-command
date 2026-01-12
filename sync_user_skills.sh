@@ -50,6 +50,10 @@ while [[ $# -gt 0 ]]; do
       echo "    - notify.sh                   Task completion notifications"
       echo "  ~/.claude/settings.json    Hook configuration"
       echo ""
+      echo "Cleanup:"
+      echo "  After syncing, removes duplicate skills from project-level .claude/skills/"
+      echo "  to prevent conflicts with user-level skills."
+      echo ""
       echo "Notify Hook Prerequisites:"
       echo "  macOS:  Built-in (osascript) - enable in System Settings > Notifications"
       echo "  Linux:  sudo apt install libnotify-bin"
@@ -133,6 +137,62 @@ sync_skills() {
   done
 
   log "✓ Skills sync complete"
+}
+
+# ============================================================================
+# Clean Legacy Project Skills (remove duplicates after user-level sync)
+# ============================================================================
+# After syncing skills to user level, check if the current project has
+# legacy skills in .claude/skills/ that now exist at user level.
+# Remove duplicates to prevent conflicts.
+# ============================================================================
+cleanup_project_skills() {
+  local project_skills_dir="${SCRIPT_DIR}/.claude/skills"
+
+  # Only cleanup if project-level skills directory exists
+  if [[ ! -d "${project_skills_dir}" ]]; then
+    log "No project-level skills directory found - skipping cleanup"
+    return 0
+  fi
+
+  log "Checking for legacy project-level skills in ${project_skills_dir}..."
+
+  local cleaned_count=0
+
+  # Check each skill in user level, remove from project if exists
+  for user_skill in "${USER_SKILLS_DIR}"/*/ ; do
+    if [[ -d "${user_skill}" ]]; then
+      local skill_name=$(basename "${user_skill}")
+      local project_skill="${project_skills_dir}/${skill_name}"
+
+      if [[ -d "${project_skill}" ]]; then
+        rm -rf "${project_skill}"
+        log "✓ Removed legacy: ${skill_name}"
+        cleaned_count=$((cleaned_count + 1))
+      fi
+    fi
+  done
+
+  # Also clean skill-rules.json if exists at project level and user level
+  if [[ -f "${project_skills_dir}/skill-rules.json" ]] && [[ -f "${USER_SKILLS_DIR}/skill-rules.json" ]]; then
+    rm -f "${project_skills_dir}/skill-rules.json"
+    log "✓ Removed legacy: skill-rules.json"
+    cleaned_count=$((cleaned_count + 1))
+  fi
+
+  # Remove empty .claude/skills directory
+  if [[ -d "${project_skills_dir}" ]]; then
+    if [[ -z "$(ls -A "${project_skills_dir}" 2>/dev/null)" ]]; then
+      rmdir "${project_skills_dir}"
+      log "✓ Removed empty project skills directory"
+    fi
+  fi
+
+  if [[ ${cleaned_count} -gt 0 ]]; then
+    log "✓ Cleaned ${cleaned_count} legacy project-level skill(s)"
+  else
+    log "No legacy project-level skills to clean"
+  fi
 }
 
 # ============================================================================
@@ -298,6 +358,10 @@ log "Starting user-level sync..."
 echo ""
 
 sync_skills
+
+# Clean legacy project-level skills that are now at user level
+echo ""
+cleanup_project_skills
 
 if [[ "${SKILLS_ONLY}" == "false" ]]; then
   echo ""
