@@ -68,7 +68,8 @@ if [[ ! -d "${PROJECT_DIR}" ]]; then
   exit 1
 fi
 
-if [[ ! -d "${PROJECT_DIR}/.git" ]]; then
+# Check if inside git repo (works for both normal repos and worktrees)
+if ! git -C "${PROJECT_DIR}" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   err "Not a git repository: ${PROJECT_DIR}"
   err "Initialize git first: cd ${PROJECT_DIR} && git init"
   exit 1
