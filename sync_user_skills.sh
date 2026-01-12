@@ -50,6 +50,9 @@ while [[ $# -gt 0 ]]; do
       echo "    - notify.sh                   Task completion notifications"
       echo "  ~/.claude/settings.json    Hook configuration"
       echo ""
+      echo "Plugins Installed:"
+      echo "  ralph-wiggum               Autonomous iteration loops (/ralph-loop)"
+      echo ""
       echo "Cleanup:"
       echo "  After syncing, removes duplicate skills from project-level .claude/skills/"
       echo "  to prevent conflicts with user-level skills."
@@ -353,6 +356,43 @@ update_user_settings() {
 }
 
 # ============================================================================
+# Install Ralph-Wiggum Plugin (Autonomous iteration loops)
+# ============================================================================
+# Ralph-wiggum enables Claude to work iteratively on tasks until completion.
+# Commands: /ralph-loop, /cancel-ralph
+# Source: https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum
+# ============================================================================
+install_ralph_wiggum_plugin() {
+  log "Installing ralph-wiggum plugin..."
+
+  if ! command -v claude >/dev/null 2>&1; then
+    warn "claude CLI not found - skipping plugin installation"
+    warn "Install Claude Code first: npm install -g @anthropic-ai/claude-code"
+    return 0
+  fi
+
+  # Add anthropics/claude-code marketplace if not already added
+  local marketplace_exists=$(claude plugin marketplace list 2>/dev/null | grep -c "claude-code-plugins" || true)
+  if [[ "${marketplace_exists}" -eq 0 ]]; then
+    log "Adding claude-code-plugins marketplace..."
+    if claude plugin marketplace add anthropics/claude-code >/dev/null 2>&1; then
+      log "✓ Added claude-code-plugins marketplace"
+    else
+      warn "Failed to add marketplace - continuing anyway"
+    fi
+  else
+    log "✓ claude-code-plugins marketplace already configured"
+  fi
+
+  # Install ralph-wiggum plugin (idempotent - overwrites existing)
+  if claude plugin install ralph-wiggum@claude-code-plugins >/dev/null 2>&1; then
+    log "✓ Installed ralph-wiggum plugin"
+  else
+    warn "Failed to install ralph-wiggum plugin"
+  fi
+}
+
+# ============================================================================
 # Main
 # ============================================================================
 log "Starting user-level sync..."
@@ -371,6 +411,8 @@ if [[ "${SKILLS_ONLY}" == "false" ]]; then
   install_notify_hook
   echo ""
   update_user_settings
+  echo ""
+  install_ralph_wiggum_plugin
 fi
 
 echo ""
@@ -383,6 +425,8 @@ if [[ "${SKILLS_ONLY}" == "false" ]]; then
   log "    - skill-activation-prompt.sh (UserPromptSubmit)"
   log "    - notify.sh (Stop - task completion notifications)"
   log "  Settings: ${USER_SETTINGS_FILE}"
+  log "  Plugins:"
+  log "    - ralph-wiggum (/ralph-loop, /cancel-ralph)"
 fi
 echo ""
 log "Skills are now available in ALL projects."
