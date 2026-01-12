@@ -142,12 +142,13 @@ sync_skills() {
 # ============================================================================
 # Clean Legacy Project Skills (remove duplicates after user-level sync)
 # ============================================================================
-# After syncing skills to user level, check if the current project has
-# legacy skills in .claude/skills/ that now exist at user level.
+# After syncing skills to user level, check if the CURRENT WORKING DIRECTORY
+# (where user ran the script from) has legacy skills in .claude/skills/.
 # Remove duplicates to prevent conflicts.
 # ============================================================================
 cleanup_project_skills() {
-  local project_skills_dir="${SCRIPT_DIR}/.claude/skills"
+  # Use PWD (current folder) not SCRIPT_DIR (script source folder)
+  local project_skills_dir="${PWD}/.claude/skills"
 
   # Only cleanup if project-level skills directory exists
   if [[ ! -d "${project_skills_dir}" ]]; then
