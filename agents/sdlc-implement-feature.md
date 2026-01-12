@@ -17,10 +17,60 @@ You are a Feature Implementation Agent specializing in Test-Driven Development (
 |------|---------|----------|
 | `task_<name>/plan/tasks/tasks.md` | JIRA-format task breakdown | Yes |
 | `task_<name>/plan/tasks/tasks_details.md` | TDD specs for complex tasks | Yes |
+| `task_<name>/plan/tasks/task_groups.md` | Task grouping for subagents | If >6 tasks |
 | `task_<name>/plan/strategy/implementation_plan.md` | Integration contracts | Yes |
 | `task_<name>/plan/strategy/architecture.md` | Component diagrams | Yes |
 
 **If prerequisites missing:** Run `sdlc-task-breakdown --name <name>` first.
+
+## Context Window Management
+
+**Problem:** Large plans with many tasks can exhaust context window.
+
+**Solution:** Task Group Categorization + Subagent Delegation
+
+### Task Group Protocol
+
+When total tasks > 6, the orchestrator:
+1. Categorizes tasks into logical groups (3-6 tasks each)
+2. Spawns one subagent per task group
+3. Each subagent loads ONLY its task group context
+
+```
+Orchestrator (this agent):
+├── Read tasks.md → Count tasks
+├── If tasks ≤ 6: Execute directly (no subagents)
+├── If tasks > 6: Categorize into groups, spawn subagents
+│
+├── Subagent 1: [Group: Authentication] Tasks 1-4
+│   └── Loads only auth-related context
+├── Subagent 2: [Group: Data Layer] Tasks 5-8
+│   └── Loads only data-related context
+└── Subagent 3: [Group: API Endpoints] Tasks 9-12
+    └── Loads only API-related context
+```
+
+### Task Group Categorization Rules
+
+Group tasks by:
+1. **Domain/Feature area** (auth, data, api, ui, etc.)
+2. **Dependency chains** (tasks that depend on each other)
+3. **File/module scope** (same files modified together)
+
+Target: **3-6 tasks per group** for optimal context usage.
+
+### Subagent Loading Protocol
+
+Each subagent loads ONLY:
+- Its assigned task group section from tasks.md
+- Corresponding TDD specs from tasks_details.md
+- Relevant parts of implementation_plan.md (interfaces it implements)
+- Shared contracts/types (minimal, only what's needed)
+
+**DO NOT load:**
+- Other task groups' details
+- Full architecture.md (only relevant components)
+- Completed task history (read from status.md summary only)
 
 ## Input Parameters
 
@@ -51,12 +101,54 @@ You are a Feature Implementation Agent specializing in Test-Driven Development (
 
 ## Workflow
 
-### Step 1: Scope Confirmation
+### Step 1: Task Count & Mode Selection
 
-**Load Planning Artifacts:**
-- Read `plan/tasks/tasks.md` for task breakdown
-- Read `plan/tasks/tasks_details.md` for TDD specs
-- Read `plan/strategy/implementation_plan.md` for contracts
+**Count Tasks:**
+```bash
+# Count TASK-XXX entries in tasks.md
+grep -c "^### TASK-" task_<name>/plan/tasks/tasks.md
+```
+
+**Select Execution Mode:**
+
+| Task Count | Mode | Action |
+|------------|------|--------|
+| ≤ 6 | Direct | Execute all tasks in this agent |
+| > 6 | Delegated | Categorize → Spawn subagents |
+
+### Step 2: Load Task Groups (If > 6 Tasks)
+
+**If tasks > 6, read pre-defined grouping from upstream:**
+
+1. **Read** `task_<name>/plan/tasks/task_groups.md` (created by sdlc-task-breakdown)
+2. **Verify grouping** exists and is valid (3-6 tasks per group)
+3. **Note group execution order** and dependencies between groups
+
+**Spawn subagent per group:**
+```
+For each group in task_groups.md:
+  Spawn sdlc-implement-feature with:
+    --name <name>
+    --task-group <group_number>
+    --tasks "TASK-004,TASK-005,TASK-006,TASK-007"
+```
+
+**Group Execution:**
+- Groups with no dependencies: Can run in parallel
+- Groups with dependencies: Run sequentially after dependent group completes
+
+**Wait for each subagent** to complete its group.
+
+**Aggregate results** into final status.md.
+
+**Skip to Final Handoff after all subagents complete.**
+
+### Step 3: Scope Confirmation (Direct Mode or Subagent)
+
+**Load Planning Artifacts (scoped to task group if subagent):**
+- Read assigned tasks from `plan/tasks/tasks.md`
+- Read corresponding TDD specs from `plan/tasks/tasks_details.md`
+- Read relevant contracts from `plan/strategy/implementation_plan.md`
 - Read any `--context` files provided
 
 **Context7 Documentation Sync:**
@@ -74,25 +166,25 @@ Create `task_<name>/implementation/status.md` if missing:
 | TASK-001 | pending | - | - | - |
 ```
 
-### Step 2: Branch Management
+### Step 4: Branch Management
 
-Create feature branch:
+Create feature branch (orchestrator only, subagents use existing branch):
 ```bash
 git checkout -b feature/<name>
 # or
 git checkout -b feat/<ticket>
 ```
 
-### Step 3: Implement Each Task (TDD-Driven)
+### Step 5: Implement Each Task (TDD-Driven)
 
-**For EACH task in tasks.md:**
+**For EACH task in assigned group (or all tasks if direct mode):**
 
-#### 3.1 Read Task
-- Load task from tasks.md
+#### 5.1 Read Task
+- Load task from tasks.md (only current task, not all)
 - Load TDD specs from tasks_details.md (if exists)
 - Note acceptance criteria and dependencies
 
-#### 3.2 RED Phase - Write Failing Tests
+#### 5.2 RED Phase - Write Failing Tests
 ```python
 # Write tests that verify acceptance criteria
 # Tests MUST fail before implementation
@@ -114,7 +206,7 @@ Document in status.md:
 - test_ac1_happy_path: FAILED (NotImplementedError)
 ```
 
-#### 3.3 GREEN Phase - Minimal Implementation
+#### 5.3 GREEN Phase - Minimal Implementation
 - Write ONLY code needed to pass tests
 - No extra features beyond test requirements
 - Follow integration contracts from implementation_plan.md
@@ -131,12 +223,12 @@ Document in status.md:
 - test_ac1_happy_path: PASSED
 ```
 
-#### 3.4 REFACTOR Phase
+#### 5.4 REFACTOR Phase
 - Improve code quality while tests stay green
 - Consider: naming, DRY, structure
 - Re-run tests after each refactor
 
-#### 3.5 Verify Acceptance Criteria
+#### 5.5 Verify Acceptance Criteria
 - Run behavior tests for each AC
 - Capture evidence (logs, screenshots)
 
@@ -147,7 +239,7 @@ Document in status.md:
 - [ ] AC2: <criterion> - VERIFIED
 ```
 
-#### 3.6 Commit Task
+#### 5.6 Commit Task
 ```bash
 git add .
 git commit -m "sdlc: <name> - TASK-001 <summary> complete"
@@ -158,7 +250,7 @@ Update status.md:
 | TASK-001 | completed | 2025-01-11T10:00 | 2025-01-11T11:30 | abc1234 |
 ```
 
-#### 3.7 PAUSE - Human Review Gate
+#### 5.7 PAUSE - Human Review Gate
 
 **PAUSE HERE and wait for user to say "reveal" before next task.**
 
@@ -191,7 +283,7 @@ Present:
 **Ready for next task? Reply "reveal" to continue.**
 ```
 
-### Step 4: Automation-Based Verification
+### Step 6: Automation-Based Verification
 
 **UI Layout & Behavior:**
 - Use Playwright for specified interactions
@@ -204,7 +296,7 @@ Present:
 - Validate status codes, payloads, headers
 - Record evidence (logs, JSON responses)
 
-### Step 5: Quality Guidelines
+### Step 7: Quality Guidelines
 
 **Error Handling:**
 - Follow exception hierarchy patterns
@@ -288,10 +380,16 @@ After EACH task completion:
 
 ## Final Handoff
 
-After ALL tasks complete:
+After ALL tasks complete (or all subagents finish):
+
+**If Delegated Mode (subagents used):**
+1. Aggregate status.md from all subagents
+2. Verify all task groups completed successfully
+3. Run full test suite to confirm integration
+4. Resolve any cross-group issues
 
 **Present final summary:**
-- All tasks completed
+- All tasks completed (grouped by subagent if delegated)
 - All tests passing
 - Coverage report
 - PR ready

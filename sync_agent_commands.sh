@@ -58,9 +58,11 @@ case "${1:-}" in
     echo "  - \${HOME}/.codex/prompts"
     echo "  - \${HOME}/.claude/CLAUDE.md (from USER_LEVEL_CLAUDE.md)"
     echo ""
+    echo "Note: sdlc_* commands are excluded (replaced by subagents)."
+    echo "Use sync_sdlc_agents.sh to sync SDLC agents instead."
+    echo ""
     echo "Additional Setup:"
     echo "  - Context7 MCP server installation guidance (requires API key)"
-    echo "  - browsermcp MCP server installation (no API key required)"
     echo "  - MCP server configuration for Codex CLI (if available)"
     echo ""
     echo "Examples:"
@@ -229,10 +231,13 @@ copy_to() {
   mkdir -p "${dest}"
   if command -v rsync >/dev/null 2>&1; then
     # Trailing slash copies contents of src into dest
-    rsync -av "${src}/" "${dest}/"
+    # Exclude sdlc_* commands (replaced by subagents)
+    rsync -av --exclude='sdlc_*.md' "${src}/" "${dest}/"
   else
     # cp fallback; "." includes hidden files in src
     cp -a "${src}/." "${dest}/"
+    # Remove sdlc_* commands (replaced by subagents)
+    find "${dest}" -name 'sdlc_*.md' -type f -delete 2>/dev/null || true
   fi
 }
 
@@ -243,12 +248,18 @@ if [[ "${INSTALL_DEPS}" == "true" ]]; then
 fi
 
 # Count files to be synced (prefer ripgrep if available)
+# Exclude sdlc_* commands (replaced by subagents)
 if command -v rg >/dev/null 2>&1; then
-  file_count=$(rg --files -g '*.md' "${SOURCE_DIR}" | wc -l)
+  file_count=$(rg --files -g '*.md' -g '!sdlc_*.md' "${SOURCE_DIR}" | wc -l)
+  skipped_count=$(rg --files -g 'sdlc_*.md' "${SOURCE_DIR}" | wc -l)
 else
-  file_count=$(find "${SOURCE_DIR}" -name "*.md" | wc -l)
+  file_count=$(find "${SOURCE_DIR}" -name "*.md" ! -name "sdlc_*.md" | wc -l)
+  skipped_count=$(find "${SOURCE_DIR}" -name "sdlc_*.md" | wc -l)
 fi
 log "Found ${file_count} command files in: ${SOURCE_DIR}"
+if [[ "${skipped_count}" -gt 0 ]]; then
+  log "Skipping ${skipped_count} sdlc_* commands (replaced by subagents)"
+fi
 
 log "-> Syncing to Claude: ${CLAUDE_DIR}"
 copy_to "${SOURCE_DIR}" "${CLAUDE_DIR}"
@@ -440,20 +451,7 @@ setup_codex_mcp() {
   else
     log "✓ Context7 MCP server already configured for Codex CLI"
   fi
-  
-  # Setup browsermcp MCP server configuration
-  if ! grep -q "^\\[mcp_servers\\.browsermcp\\]" "${config_file}"; then
-    log "Adding browsermcp MCP configuration to Codex..."
-    echo "" >> "${config_file}"
-    echo "[mcp_servers.browsermcp]" >> "${config_file}"
-    echo "args = [\"@browsermcp/mcp@latest\"]" >> "${config_file}"
-    echo "command = \"npx\"" >> "${config_file}"
-    log "✓ Successfully configured browsermcp MCP server for Codex CLI"
-    configs_added=true
-  else
-    log "✓ browsermcp MCP server already configured for Codex CLI"
-  fi
-  
+
   if [[ "${configs_added}" == "false" ]]; then
     log "All MCP servers already configured for Codex CLI"
   fi
@@ -496,11 +494,6 @@ setup_codex_mcp_config() {
   echo "# Context7 MCP server (requires API key)"
   echo "[mcp_servers.context7]"
   echo "args = [\"-y\", \"@upstash/context7-mcp\", \"--api-key\", \"YOUR_API_KEY\"]"
-  echo "command = \"npx\""
-  echo ""
-  echo "# browsermcp MCP server (no API key required)"
-  echo "[mcp_servers.browsermcp]"
-  echo "args = [\"@browsermcp/mcp@latest\"]"
   echo "command = \"npx\""
   echo ""
   echo "Replace YOUR_API_KEY with your actual Context7 API key."
@@ -560,41 +553,8 @@ install_context7_mcp() {
   
 }
 
-# Install browsermcp MCP server with user interaction
-install_browsermcp_mcp() {
-  log "Setting up browsermcp MCP server"
-  
-  # Check if Claude Code CLI is available
-  if ! command -v claude >/dev/null 2>&1; then
-    warn "Claude Code CLI not found. Install Claude Code CLI first:"
-    echo "  Visit: https://claude.ai/code for installation instructions"
-    echo ""
-    return 1
-  fi
-  
-  # Check if browsermcp MCP server already exists
-  if claude mcp list 2>/dev/null | grep -q "browsermcp"; then
-    log "✓ browsermcp MCP server already installed"
-    return 0
-  fi
-  
-  # Install browsermcp MCP server for Claude Code CLI
-  log "Installing browsermcp MCP server..."
-  if claude mcp add --transport stdio --scope user browsermcp -- npx @browsermcp/mcp@latest 2>/dev/null; then
-    log "✓ Successfully installed browsermcp MCP server"
-  else
-    err "Failed to install browsermcp MCP server"
-    echo "Try manual installation:"
-    echo "  claude mcp add --transport stdio --scope user browsermcp -- npx @browsermcp/mcp@latest"
-  fi
-  
-}
-
 # Install Context7 MCP server
 install_context7_mcp
-
-# Install browsermcp MCP server
-install_browsermcp_mcp
 
 # Install skill-activation-prompt hook to current project
 log "Installing skill-activation-prompt hook..."

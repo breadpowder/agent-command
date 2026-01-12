@@ -158,15 +158,105 @@ Example:
 | AC1 | `test_ac1_behavior` | `pytest tests/... -v` |
 ```
 
-### Step 5: Task Ordering Strategy
+### Step 5: Task Grouping (For Implementation Context Management)
+
+**Why Group Tasks:**
+The implementation phase uses subagents for large plans (>6 tasks). Each subagent loads only its task group to manage context window efficiently.
+
+**Task Group Rules:**
+- **3-6 tasks per group** (optimal for subagent context)
+- Group by **domain/feature area** (auth, data, api, ui, etc.)
+- Keep **dependent tasks together** when possible
+- Each group should be **independently implementable** (minimal cross-group dependencies)
+
+**Create:** `task_<name>/plan/tasks/task_groups.md`
+
+```markdown
+# Task Groups: <Feature Name>
+
+**Total Tasks**: 12
+**Total Groups**: 3
+**Avg Tasks/Group**: 4
+
+---
+
+## Group 1: Infrastructure & Data Layer
+**Domain**: Database, Models, Migrations
+**Tasks**: 4
+**Dependencies**: None (start here)
+
+| Task ID | Title | Priority |
+|---------|-------|----------|
+| TASK-001 | Setup database schema | P0 |
+| TASK-002 | Create data models | P0 |
+| TASK-003 | Database migrations | P1 |
+| TASK-004 | Repository layer | P1 |
+
+---
+
+## Group 2: API Layer
+**Domain**: REST endpoints, Validation, Auth
+**Tasks**: 4
+**Dependencies**: Group 1 (data layer)
+
+| Task ID | Title | Priority |
+|---------|-------|----------|
+| TASK-005 | Auth endpoints | P0 |
+| TASK-006 | User CRUD endpoints | P1 |
+| TASK-007 | Input validation | P1 |
+| TASK-008 | Error handling middleware | P2 |
+
+---
+
+## Group 3: Frontend Integration
+**Domain**: UI components, State, API calls
+**Tasks**: 4
+**Dependencies**: Group 2 (API layer)
+
+| Task ID | Title | Priority |
+|---------|-------|----------|
+| TASK-009 | Login component | P0 |
+| TASK-010 | Dashboard component | P1 |
+| TASK-011 | State management | P1 |
+| TASK-012 | API client integration | P1 |
+
+---
+
+## Group Execution Order
+1. Group 1: Infrastructure (sequential - foundation)
+2. Group 2: API Layer (can parallelize after Group 1)
+3. Group 3: Frontend (can parallelize after Group 2)
+```
+
+**Grouping Guidelines:**
+| Domain | Typical Tasks |
+|--------|---------------|
+| Infrastructure | DB schema, migrations, config, env setup |
+| Data Layer | Models, repositories, data access |
+| API/Backend | Endpoints, middleware, validation |
+| Business Logic | Services, domain logic, workflows |
+| Frontend/UI | Components, pages, state management |
+| Integration | 3rd party APIs, external services |
+| Testing | E2E tests, integration tests |
+
+### Step 6: Task Ordering Strategy
 
 **Dependency Graph Based on Architecture:**
 ```
-TASK-001: Database Schema (No dependencies)
-    └── TASK-002: Backend API (Depends on schema)
-        └── TASK-004: Frontend Integration (Depends on API)
-    └── TASK-003: Data Models (Depends on schema)
-        └── TASK-005: Business Logic (Depends on models)
+Group 1: Infrastructure
+├── TASK-001: Database Schema (No dependencies)
+│   └── TASK-002: Data Models (Depends on schema)
+│   └── TASK-003: Migrations (Depends on schema)
+└── TASK-004: Repository Layer (Depends on models)
+
+Group 2: API Layer (Depends on Group 1)
+├── TASK-005: Auth Endpoints
+├── TASK-006: User Endpoints
+└── ...
+
+Group 3: Frontend (Depends on Group 2)
+├── TASK-009: Login Component
+└── ...
 ```
 
 **Contract-Driven Ordering:**
@@ -176,13 +266,13 @@ TASK-001: Database Schema (No dependencies)
 4. Component Integration (Section 4.3)
 5. User Input (Section 4.4)
 
-**Risk-First within each level:**
+**Risk-First within each group:**
 1. High-risk: Unknowns, integrations, new tech
 2. Core functionality: Main features
 3. Standard work: Well-understood tasks
 4. Polish: UI improvements, performance
 
-### Step 6: Contract Coverage Verification
+### Step 7: Contract Coverage Verification
 
 Before finalizing, verify all contracts are covered:
 
@@ -194,7 +284,7 @@ Before finalizing, verify all contracts are covered:
 | User Input Specs | 4.4 | TASK-xxx, TASK-xxx |
 | Data Models | 5 | TASK-xxx, TASK-xxx |
 
-### Step 7: Commit Progress
+### Step 8: Commit Progress
 
 After task breakdown:
 ```bash
@@ -212,6 +302,7 @@ git commit -m "sdlc: <name> - feature planning complete"
 |------|---------|
 | `task_<name>/plan/tasks/tasks.md` | Complete JIRA-format task breakdown |
 | `task_<name>/plan/tasks/tasks_details.md` | TDD specs for complicated tasks |
+| `task_<name>/plan/tasks/task_groups.md` | Task grouping for implementation subagents |
 | `task_<name>/plan/status.md` | Updated with Phase 2 activities |
 
 ## Human Review Gate
@@ -242,6 +333,12 @@ Present the following for review:
 - [ ] TDD specifications complete
 - [ ] Behavior tests mapped to acceptance criteria
 - [ ] `tasks_details.md` created for complicated tasks
+- [ ] **Task grouping complete (if >6 tasks):**
+  - [ ] `task_groups.md` created
+  - [ ] 3-6 tasks per group
+  - [ ] Groups organized by domain/feature area
+  - [ ] Group dependencies documented
+  - [ ] Group execution order specified
 - [ ] User has approved the task breakdown
 
 **Collaboration Checkpoints:**
@@ -263,5 +360,8 @@ sdlc-implement-feature --name <same-name>
 **Artifacts passed forward:**
 - `task_<name>/plan/tasks/tasks.md` - Task breakdown
 - `task_<name>/plan/tasks/tasks_details.md` - TDD specs
+- `task_<name>/plan/tasks/task_groups.md` - Task grouping (if >6 tasks)
 
-The implementation phase will read these tasks and implement each following TDD methodology.
+The implementation phase will:
+- If ≤6 tasks: Execute directly in single agent
+- If >6 tasks: Use `task_groups.md` to spawn subagents per group, each loading only its group's context
