@@ -251,12 +251,78 @@ EOF
 }
 
 # ============================================================================
+# Remove User-Level Hooks from Project Settings
+# ============================================================================
+# These hooks should ONLY run at user level (~/.claude/), not project level.
+# Having them at both levels causes duplicate execution.
+# ============================================================================
+cleanup_user_level_hooks() {
+  if [[ ! -f "${PROJECT_SETTINGS_FILE}" ]]; then
+    return 0
+  fi
+
+  if ! command -v jq >/dev/null 2>&1; then
+    return 0
+  fi
+
+  log "Checking for user-level hooks in project settings..."
+
+  # User-level hooks that should NOT be in project settings
+  local user_level_hooks=(
+    "skill-activation-prompt"
+    "notify.sh"
+  )
+
+  local cleaned=false
+  local temp=$(mktemp)
+
+  for hook_name in "${user_level_hooks[@]}"; do
+    # Check if hook exists in project settings
+    local exists=$(jq -r --arg hn "${hook_name}" \
+      '[.hooks[]?[]?.hooks?[]? | select(.command? | contains($hn))] | length' \
+      "${PROJECT_SETTINGS_FILE}" 2>/dev/null)
+
+    if [[ "${exists}" -gt 0 ]]; then
+      # Remove the hook from all hook types
+      jq --arg hn "${hook_name}" '
+        .hooks |= (
+          to_entries | map(
+            .value |= map(
+              .hooks |= map(select(.command | contains($hn) | not))
+            )
+          ) | from_entries
+        )
+      ' "${PROJECT_SETTINGS_FILE}" > "${temp}" && mv "${temp}" "${PROJECT_SETTINGS_FILE}"
+      log "✓ Removed duplicate: ${hook_name} (runs at user level)"
+      cleaned=true
+    fi
+  done
+
+  # Clean up empty hook arrays
+  if [[ "${cleaned}" == "true" ]]; then
+    jq '
+      .hooks |= (
+        to_entries | map(
+          .value |= map(select(.hooks | length > 0))
+        ) | map(select(.value | length > 0)) | from_entries
+      )
+    ' "${PROJECT_SETTINGS_FILE}" > "${temp}" && mv "${temp}" "${PROJECT_SETTINGS_FILE}"
+  fi
+
+  if [[ "${cleaned}" == "false" ]]; then
+    log "No user-level hooks to remove"
+  fi
+}
+
+# ============================================================================
 # Main
 # ============================================================================
 install_post_tool_use_tracker
 install_user_prompt_logger
 echo ""
 update_project_settings
+echo ""
+cleanup_user_level_hooks
 
 echo ""
 log "✓ Project hooks installed!"
