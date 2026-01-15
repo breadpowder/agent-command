@@ -4,11 +4,12 @@ set -euo pipefail
 # Sync AgentDK command specs to local agent prompt directories.
 #
 # Usage:
-#   sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps]
+#   sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps] [--sync-agents]
 #
 # Options:
 #   --github                Clone from GitHub repo and sync from there
 #   --install-deps          Install required CLI tools (ripgrep, fd/fdfind, jq)
+#   --sync-agents           Also sync SDLC agents to ~/.claude/agents/
 #   SOURCE_DIR              Use explicit local directory path
 #   (no args)               Use <repo_root>/commands (relative to script location)
 #
@@ -18,6 +19,7 @@ set -euo pipefail
 #   - ${HOME}/.claude/commands
 #   - ${HOME}/.codex/prompts
 #   - ${HOME}/.claude/CLAUDE.md (from USER_LEVEL_CLAUDE.md)
+#   - ${HOME}/.claude/agents (with --sync-agents)
 
 log() { printf "[sync] %s\n" "$*"; }
 err() { printf "[sync][error] %s\n" "$*" >&2; }
@@ -28,6 +30,7 @@ DEFAULT_ABS_SOURCE="${SCRIPT_DIR}/commands"
 GITHUB_REPO="https://github.com/breadpowder/agent-command.git"
 TEMP_CLONE_DIR=""
 INSTALL_DEPS=false
+SYNC_AGENTS=true
 
 # Cleanup function for temporary directory
 cleanup() {
@@ -43,11 +46,12 @@ case "${1:-}" in
   --help|-h|help)
     echo "Sync AgentDK command specs to local agent prompt directories."
     echo ""
-    echo "Usage: sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps]"
+    echo "Usage: sync_agent_commands.sh [SOURCE_DIR|--github] [--install-deps] [--sync-agents]"
     echo ""
     echo "Options:"
     echo "  --github              Clone from GitHub repo and sync from there"
     echo "  --install-deps        Install ripgrep, fd/fdfind, jq based on OS"
+    echo "  --sync-agents         Also sync SDLC agents to ~/.claude/agents/"
     echo "  SOURCE_DIR            Use explicit local directory path"
     echo "  (no arguments)        Use <repo_root>/commands (relative to script)"
     echo ""
@@ -57,9 +61,10 @@ case "${1:-}" in
     echo "  - \${HOME}/.claude/commands"
     echo "  - \${HOME}/.codex/prompts"
     echo "  - \${HOME}/.claude/CLAUDE.md (from USER_LEVEL_CLAUDE.md)"
+    echo "  - \${HOME}/.claude/agents (with --sync-agents)"
     echo ""
     echo "Note: sdlc_* commands are excluded (replaced by subagents)."
-    echo "Use sync_sdlc_agents.sh to sync SDLC agents instead."
+    echo "Use --sync-agents to sync SDLC agents, or run sync_sdlc_agents.sh directly."
     echo ""
     echo "Additional Setup:"
     echo "  - Context7 MCP server installation guidance (requires API key)"
@@ -68,7 +73,9 @@ case "${1:-}" in
     echo "Examples:"
     echo "  sync_agent_commands.sh                           # Use local commands/"
     echo "  sync_agent_commands.sh --github                  # Clone from GitHub"
-    echo "  sync_agent_commands.sh --install-deps           # Install tools"
+    echo "  sync_agent_commands.sh --sync-agents             # Sync commands + agents"
+    echo "  sync_agent_commands.sh --github --sync-agents    # GitHub + agents"
+    echo "  sync_agent_commands.sh --install-deps            # Install tools"
     echo "  sync_agent_commands.sh /path/to/commands         # Use custom path"
     exit 0
     ;;
@@ -80,15 +87,20 @@ case "${1:-}" in
     ;;
 esac
 
-# Optional argument: --install-deps (accept in either position)
-if [[ "${2:-}" == "--install-deps" || "${1:-}" == "--install-deps" ]]; then
-  INSTALL_DEPS=true
-fi
-
-# Support --github passed as the second argument (after --install-deps)
-if [[ "${2:-}" == "--github" ]]; then
-  USE_GITHUB=true
-fi
+# Parse optional arguments from any position
+for arg in "$@"; do
+  case "${arg}" in
+    --install-deps)
+      INSTALL_DEPS=true
+      ;;
+    --sync-agents)
+      SYNC_AGENTS=true
+      ;;
+    --github)
+      USE_GITHUB=true
+      ;;
+  esac
+done
 
 # Detect OS and package manager for optional installs
 detect_os() {
@@ -563,6 +575,18 @@ if [[ -x "${SCRIPT_DIR}/sync_skill.sh" ]]; then
 else
   warn "sync_skill.sh not found or not executable at: ${SCRIPT_DIR}/sync_skill.sh"
   warn "Skipping skill-activation-prompt installation"
+fi
+
+# Sync SDLC agents if requested
+if [[ "${SYNC_AGENTS}" == "true" ]]; then
+  log ""
+  log "Syncing SDLC agents (--sync-agents requested)..."
+  if [[ -x "${SCRIPT_DIR}/sync_sdlc_agents.sh" ]]; then
+    "${SCRIPT_DIR}/sync_sdlc_agents.sh" || warn "Failed to sync SDLC agents"
+  else
+    warn "sync_sdlc_agents.sh not found or not executable at: ${SCRIPT_DIR}/sync_sdlc_agents.sh"
+    warn "Skipping SDLC agents sync"
+  fi
 fi
 
 # Helpful guidance for agent CLI usage (tooling best practices)

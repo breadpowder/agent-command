@@ -278,7 +278,7 @@ update_user_settings() {
   if ! command -v jq >/dev/null 2>&1; then
     warn "jq not found - manual configuration required"
     warn "Add to ${USER_SETTINGS_FILE}:"
-    echo '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"$HOME/.claude/hooks/skill-activation-prompt.sh"}]}],"Stop":[{"matcher":"*","hooks":[{"type":"command","command":"$HOME/.claude/hooks/notify.sh Task finished","timeout":5}]}]}}'
+    echo '{"hooks":{"UserPromptSubmit":[{"hooks":[{"type":"command","command":"bash \"$HOME/.claude/hooks/skill-activation-prompt.sh\""}]}],"Stop":[{"matcher":"*","hooks":[{"type":"command","command":"bash \"$HOME/.claude/hooks/notify.sh\" \"Task finished\"","timeout":5}]}]}}'
     return 1
   fi
 
@@ -302,13 +302,13 @@ update_user_settings() {
       if .hooks.UserPromptSubmit then
         .hooks.UserPromptSubmit[0].hooks += [{
           "type": "command",
-          "command": "$HOME/.claude/hooks/skill-activation-prompt.sh"
+          "command": "bash \"$HOME/.claude/hooks/skill-activation-prompt.sh\""
         }]
       else
         .hooks.UserPromptSubmit = [{
           "hooks": [{
             "type": "command",
-            "command": "$HOME/.claude/hooks/skill-activation-prompt.sh"
+            "command": "bash \"$HOME/.claude/hooks/skill-activation-prompt.sh\""
           }]
         }]
       end
@@ -329,7 +329,7 @@ update_user_settings() {
           "matcher": "*",
           "hooks": [{
             "type": "command",
-            "command": "$HOME/.claude/hooks/notify.sh Task finished",
+            "command": "bash \"$HOME/.claude/hooks/notify.sh\" \"Task finished\"",
             "timeout": 5
           }]
         }]
@@ -338,7 +338,7 @@ update_user_settings() {
           "matcher": "*",
           "hooks": [{
             "type": "command",
-            "command": "$HOME/.claude/hooks/notify.sh Task finished",
+            "command": "bash \"$HOME/.claude/hooks/notify.sh\" \"Task finished\"",
             "timeout": 5
           }]
         }]

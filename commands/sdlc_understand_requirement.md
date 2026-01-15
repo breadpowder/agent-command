@@ -7,7 +7,94 @@
   APIs.
 
 ## Purpose
-Initial requirement understanding and clarification workflow that transforms raw user input into a concise, validated starting point. Clarification‑First: reflect user intent, bundle clarifying questions, wait for confirmation, and record assumptions as “unconfirmed”. Keep focus on solving the problem with backward compatibility in mind.
+Initial requirement understanding and clarification workflow that transforms raw user input into a concise, validated starting point. Clarification-First: reflect user intent, bundle clarifying questions, wait for confirmation, and record assumptions as "unconfirmed". Keep focus on solving the problem with backward compatibility in mind.
+
+**IMPORTANT**: This phase focuses on WHAT the user needs, NOT HOW to build it. No implementation details or technical discussions.
+
+---
+
+## MANDATORY GATE PROTOCOL
+
+**CRITICAL**: You MUST pause and present a gate for user review BEFORE writing any files.
+
+### Gate Rules
+1. **NO FILE WRITES** until user approves the gate output
+2. Present your understanding in the gate format below
+3. Wait for explicit "continue" or feedback before proceeding
+4. If user requests changes, update your understanding and present the gate again
+
+### Gate Trigger
+After completing initial analysis and drafting clarifying questions, you MUST present the gate output for review.
+
+### Gate Output Format
+```
+═══════════════════════════════════════════════════════════════
+🚧 GATE: REQUIREMENTS UNDERSTANDING
+═══════════════════════════════════════════════════════════════
+
+### My Understanding
+[Problem statement - one paragraph summary]
+
+### High-Level Functional Requirements
+- [Capability 1: what the system should do]
+- [Capability 2: what the system should do]
+- [Capability 3: what the system should do]
+(3-7 items, NO implementation details)
+
+### High-Level Non-Functional Requirements
+- Performance: [user expectations, NOT technical specs]
+- Security: [user expectations, NOT solutions]
+- Scalability: [growth expectations]
+- Usability: [accessibility, platform needs]
+(Categories only, NO technical solutions)
+
+### Primary Use Case
+[One paragraph describing the main user scenario]
+- [Key interaction 1]
+- [Key interaction 2]
+- [Key interaction 3]
+(Maximum 3 bullet points)
+
+### Constraints
+- Timeline: [deadlines, milestones]
+- Budget/Resources: [limitations]
+- Platform: [where it must work]
+- Regulatory: [compliance needs]
+
+### Assumptions (UNCONFIRMED)
+- [Assumption 1] - NEEDS CONFIRMATION
+- [Assumption 2] - NEEDS CONFIRMATION
+
+### Clarifying Questions
+1. [Question about scope/goals]?
+2. [Question about users/stakeholders]?
+3. [Question about constraints]?
+
+⏸️  WAITING FOR YOUR REVIEW
+   Reply "continue" to proceed to file creation, or provide feedback.
+═══════════════════════════════════════════════════════════════
+```
+
+---
+
+## Explicitly Prohibited at This Stage
+
+The following MUST NOT appear in requirement analysis:
+
+| Prohibited | Reason |
+|------------|--------|
+| Implementation details | Focus on WHAT, not HOW |
+| Code or pseudo-code | Save for planning phase |
+| Technology choices | No "use React", "use PostgreSQL" |
+| Architecture decisions | No system diagrams or component designs |
+| Database schemas | Not a requirement concern |
+| API designs | Save for planning phase |
+| Performance optimization techniques | State requirements, not solutions |
+| Testing strategies | Save for planning phase |
+
+**Purpose**: Keep focus purely on understanding user needs and business value.
+
+---
 
 ## Command usage
 ```bash
@@ -57,6 +144,44 @@ This command creates commits at key checkpoints for traceability:
 - Optional (medium/large): `task_<name>/requirement/requirements/requirements.md`
 
 ## 🔹 Plan
+
+### 0. Focus Areas (MUST Capture These)
+
+Your requirement analysis MUST produce these four deliverables for the gate:
+
+#### A. High-Level Functional Requirements
+What the system should DO (capabilities, not implementation):
+- Core capabilities users need (3-7 items)
+- Main workflows that must be supported
+- Key features from user perspective
+- **Format**: "The system should [verb] [what]" - NO technical details
+
+#### B. High-Level Non-Functional Requirements
+Quality attributes and expectations (NOT technical solutions):
+- **Performance**: Response time expectations, throughput needs
+- **Security**: Authentication needs, data protection requirements
+- **Scalability**: Expected user volume, growth trajectory
+- **Reliability**: Uptime expectations, availability needs
+- **Usability**: Accessibility requirements, platform support
+- **Format**: Category + user expectation - NO specific technologies
+
+#### C. High-Level Use Case
+Primary user scenario in business terms:
+- One paragraph describing the main user journey
+- Maximum 3 bullet points for key interactions
+- **Format**: "As a [user], I want to [goal] so that [benefit]"
+- Focus on user value, NOT system behavior
+
+#### D. Constraints
+Hard boundaries that limit the solution space:
+- Timeline constraints (deadlines, milestones)
+- Budget/resource constraints
+- Platform constraints (must work on X)
+- Regulatory/compliance constraints
+- Integration constraints (must work with Y)
+- **Format**: Category + specific limitation
+
+---
 
 ### 1. Initial requirement analysis and gap identification
 
@@ -283,12 +408,14 @@ Workflow integration:
 - **ROI Awareness**: Early consideration of return on investment for requirements
 - **Risk Assessment**: Identify business risks associated with requirements
 
-### Technical feasibility awareness
-- **Constraint Recognition**: Early identification of technical constraints and limitations
-- **Integration Consideration**: Understanding requirements within existing system context
-- **Scalability Awareness**: Consider scalability implications of requirements
-- **Security Mindset**: Early identification of security considerations and requirements
-- **Performance Consideration**: Understanding performance implications and constraints
+### Technical feasibility awareness (Constraints Only - NO Solutions)
+- **Constraint Recognition**: Identify constraints that limit solution options (NOT propose solutions)
+- **Integration Consideration**: Note what systems must integrate (NOT how to integrate)
+- **Scalability Awareness**: Capture growth expectations (NOT scaling strategies)
+- **Security Mindset**: Document security requirements (NOT security implementations)
+- **Performance Consideration**: Record performance expectations (NOT optimization techniques)
+
+**REMINDER**: This section captures CONSTRAINTS as requirements, NOT technical approaches.
 
 ## Collaboration and communication
 
@@ -302,15 +429,24 @@ Workflow integration:
 ### Documentation standards
 
 ## Success criteria
-- Understanding is reflected back and confirmed by the user.
-- All assumptions are explicitly logged and either confirmed or remain flagged.
-- Requirements are unambiguous, testable, and traceable to original intent.
-- A prioritized set of user stories with acceptance criteria exists.
-- Open questions and constraints are documented with owners and timelines.
-- **Clarity Standards**: Clear, jargon-free requirement documentation
-- **Structured Format**: Consistent documentation format and organization
-- **Traceability Maintenance**: Clear links between user input and refined requirements
-- **Version Control**: Proper versioning of requirement iterations and changes
-- **Accessibility**: Ensure documentation is accessible to all stakeholders
 
-This requirement understanding workflow ensures comprehensive requirement clarification and structuring that serves as high-quality input for PRD development, providing clarity, user validation, and structured foundation for all subsequent development activities.
+### Gate Completion Criteria
+- [ ] Gate presented to user BEFORE any file writes
+- [ ] User explicitly approved with "continue" or provided feedback
+- [ ] All four focus areas captured (functional, non-functional, use case, constraints)
+- [ ] NO implementation details or technical solutions in outputs
+
+### Quality Criteria
+- Understanding is reflected back and confirmed by the user
+- All assumptions are explicitly logged and either confirmed or remain flagged
+- Requirements are unambiguous, testable, and traceable to original intent
+- High-level use case is clear (one paragraph + max 3 bullets)
+- Open questions and constraints are documented
+
+### Documentation Standards
+- **Clarity**: Clear, jargon-free, business-focused language
+- **No Tech Speak**: No code, no architecture, no technology choices
+- **Structured Format**: Consistent format following the gate template
+- **Traceability**: Clear links between user input and refined requirements
+
+This requirement understanding workflow ensures comprehensive requirement clarification that serves as high-quality input for PRD development. It focuses purely on WHAT users need, leaving HOW to build it for subsequent phases.

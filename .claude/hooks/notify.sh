@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Cross-platform Claude Code notification hook
 # - Shows terminal program, unique session ID, and project
 # - Fails silently if no permission
